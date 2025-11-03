@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		726789152EB77FE7008AD97B /* TrainLogApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrainLogApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		726789152EB77FE7008AD97B /* TrainLog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrainLog.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		726789172EB77FE7008AD97B /* TrainLogApp */ = {
+		726789172EB77FE7008AD97B /* TrainLog */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = TrainLogApp;
+			path = TrainLog;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		7267890C2EB77FE7008AD97B = {
 			isa = PBXGroup;
 			children = (
-				726789172EB77FE7008AD97B /* TrainLogApp */,
+				726789172EB77FE7008AD97B /* TrainLog */,
 				726789162EB77FE7008AD97B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +40,7 @@
 		726789162EB77FE7008AD97B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				726789152EB77FE7008AD97B /* TrainLogApp.app */,
+				726789152EB77FE7008AD97B /* TrainLog.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +48,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		726789142EB77FE7008AD97B /* TrainLogApp */ = {
+		726789142EB77FE7008AD97B /* TrainLog */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 726789202EB77FE7008AD97B /* Build configuration list for PBXNativeTarget "TrainLogApp" */;
+			buildConfigurationList = 726789202EB77FE7008AD97B /* Build configuration list for PBXNativeTarget "TrainLog" */;
 			buildPhases = (
 				726789112EB77FE7008AD97B /* Sources */,
 				726789122EB77FE7008AD97B /* Frameworks */,
@@ -61,13 +61,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				726789172EB77FE7008AD97B /* TrainLogApp */,
+				726789172EB77FE7008AD97B /* TrainLog */,
 			);
-			name = TrainLogApp;
+			name = TrainLog;
 			packageProductDependencies = (
 			);
 			productName = TrainLogApp;
-			productReference = 726789152EB77FE7008AD97B /* TrainLogApp.app */;
+			productReference = 726789152EB77FE7008AD97B /* TrainLog.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -85,7 +85,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 726789102EB77FE7008AD97B /* Build configuration list for PBXProject "TrainLogApp" */;
+			buildConfigurationList = 726789102EB77FE7008AD97B /* Build configuration list for PBXProject "TrainLog" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -99,7 +99,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				726789142EB77FE7008AD97B /* TrainLogApp */,
+				726789142EB77FE7008AD97B /* TrainLog */,
 			);
 		};
 /* End PBXProject section */
@@ -313,7 +313,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		726789102EB77FE7008AD97B /* Build configuration list for PBXProject "TrainLogApp" */ = {
+		726789102EB77FE7008AD97B /* Build configuration list for PBXProject "TrainLog" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7267891E2EB77FE7008AD97B /* Debug */,
@@ -322,7 +322,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		726789202EB77FE7008AD97B /* Build configuration list for PBXNativeTarget "TrainLogApp" */ = {
+		726789202EB77FE7008AD97B /* Build configuration list for PBXNativeTarget "TrainLog" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				726789212EB77FE7008AD97B /* Debug */,
