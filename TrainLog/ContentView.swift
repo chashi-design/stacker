@@ -260,6 +260,7 @@ struct LogView: View {
     // SwiftDataにアクセスするためのコンテキスト
     @Environment(\.modelContext) private var context
     // 画面上の入力値を保持しておくState
+    @State private var selectedDate = LogDateHelper.normalized(Date())
     @State private var exercise = ""
     @State private var weight = ""
     @State private var reps = ""
@@ -275,6 +276,26 @@ struct LogView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section("日付") {
+                    DatePicker("日付", selection: $selectedDate, displayedComponents: .date)
+                        .datePickerStyle(.graphical)
+                        .labelsHidden()
+                        .onChange(of: selectedDate) { newValue in
+                            selectedDate = LogDateHelper.normalized(newValue)
+                        }
+
+                    HStack {
+                        Label(selectedDateLabel, systemImage: "calendar")
+                            .font(.headline)
+                        Spacer()
+                        Button("今日に戻す") {
+                            selectedDate = LogDateHelper.normalized(Date())
+                        }
+                        .font(.caption)
+                    }
+                    .padding(.top, 4)
+                }
+
                 Section("種目") {
                     if isLoadingExercises {
                         ProgressView("読み込み中…")
@@ -397,7 +418,7 @@ struct LogView: View {
 
         // Workoutにまとめる
         let workout = Workout(
-            date: .now,
+            date: LogDateHelper.normalized(selectedDate),
             note: note,
             sets: savedSets
         )
@@ -418,6 +439,12 @@ struct DraftSet: Identifiable {
     var weight: Double
     var reps: Int
     var rpe: Double?
+}
+
+extension LogView {
+    private var selectedDateLabel: String {
+        LogDateHelper.label(for: selectedDate)
+    }
 }
 
 // キーボードを閉じるための共通ヘルパー（どのViewからでも呼べるようにextensionにしている）
