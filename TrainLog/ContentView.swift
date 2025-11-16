@@ -260,7 +260,7 @@ struct LogView: View {
     // SwiftDataにアクセスするためのコンテキスト
     @Environment(\.modelContext) private var context
     // 画面上の入力値を保持しておくState
-    @State private var selectedDate = Date()
+    @State private var selectedDate = Calendar.current.startOfDay(for: Date())
     @State private var exercise = ""
     @State private var weight = ""
     @State private var reps = ""
@@ -280,6 +280,20 @@ struct LogView: View {
                     DatePicker("日付", selection: $selectedDate, displayedComponents: .date)
                         .datePickerStyle(.graphical)
                         .labelsHidden()
+                        .onChange(of: selectedDate) { newValue in
+                            selectedDate = normalizedDate(newValue)
+                        }
+
+                    HStack {
+                        Label(selectedDateLabel, systemImage: "calendar")
+                            .font(.headline)
+                        Spacer()
+                        Button("今日に戻す") {
+                            selectedDate = normalizedDate(Date())
+                        }
+                        .font(.caption)
+                    }
+                    .padding(.top, 4)
                 }
 
                 Section("種目") {
@@ -404,7 +418,7 @@ struct LogView: View {
 
         // Workoutにまとめる
         let workout = Workout(
-            date: selectedDate,
+            date: normalizedDate(selectedDate),
             note: note,
             sets: savedSets
         )
@@ -425,6 +439,23 @@ struct DraftSet: Identifiable {
     var weight: Double
     var reps: Int
     var rpe: Double?
+}
+
+extension LogView {
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ja_JP")
+        formatter.dateFormat = "yyyy年M月d日(E)"
+        return formatter
+    }()
+
+    private var selectedDateLabel: String {
+        Self.dateFormatter.string(from: selectedDate)
+    }
+
+    private func normalizedDate(_ date: Date) -> Date {
+        Calendar.current.startOfDay(for: date)
+    }
 }
 
 // キーボードを閉じるための共通ヘルパー（どのViewからでも呼べるようにextensionにしている）
