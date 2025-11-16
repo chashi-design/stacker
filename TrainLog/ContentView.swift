@@ -260,7 +260,7 @@ struct LogView: View {
     // SwiftDataにアクセスするためのコンテキスト
     @Environment(\.modelContext) private var context
     // 画面上の入力値を保持しておくState
-    @State private var selectedDate = Calendar.current.startOfDay(for: Date())
+    @State private var selectedDate = LogDateHelper.normalized(Date())
     @State private var exercise = ""
     @State private var weight = ""
     @State private var reps = ""
@@ -281,7 +281,7 @@ struct LogView: View {
                         .datePickerStyle(.graphical)
                         .labelsHidden()
                         .onChange(of: selectedDate) { newValue in
-                            selectedDate = normalizedDate(newValue)
+                            selectedDate = LogDateHelper.normalized(newValue)
                         }
 
                     HStack {
@@ -289,7 +289,7 @@ struct LogView: View {
                             .font(.headline)
                         Spacer()
                         Button("今日に戻す") {
-                            selectedDate = normalizedDate(Date())
+                            selectedDate = LogDateHelper.normalized(Date())
                         }
                         .font(.caption)
                     }
@@ -418,7 +418,7 @@ struct LogView: View {
 
         // Workoutにまとめる
         let workout = Workout(
-            date: normalizedDate(selectedDate),
+            date: LogDateHelper.normalized(selectedDate),
             note: note,
             sets: savedSets
         )
@@ -442,19 +442,8 @@ struct DraftSet: Identifiable {
 }
 
 extension LogView {
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
-        formatter.dateFormat = "yyyy年M月d日(E)"
-        return formatter
-    }()
-
     private var selectedDateLabel: String {
-        Self.dateFormatter.string(from: selectedDate)
-    }
-
-    private func normalizedDate(_ date: Date) -> Date {
-        Calendar.current.startOfDay(for: date)
+        LogDateHelper.label(for: selectedDate)
     }
 }
 
