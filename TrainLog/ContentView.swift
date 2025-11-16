@@ -260,6 +260,7 @@ struct LogView: View {
     // SwiftDataにアクセスするためのコンテキスト
     @Environment(\.modelContext) private var context
     // 画面上の入力値を保持しておくState
+    @State private var selectedDate = Date()
     @State private var exercise = ""
     @State private var weight = ""
     @State private var reps = ""
@@ -275,6 +276,12 @@ struct LogView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section("日付") {
+                    DatePicker("日付", selection: $selectedDate, displayedComponents: .date)
+                        .datePickerStyle(.graphical)
+                        .labelsHidden()
+                }
+
                 Section("種目") {
                     if isLoadingExercises {
                         ProgressView("読み込み中…")
@@ -397,7 +404,7 @@ struct LogView: View {
 
         // Workoutにまとめる
         let workout = Workout(
-            date: .now,
+            date: selectedDate,
             note: note,
             sets: savedSets
         )
