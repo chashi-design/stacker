@@ -272,21 +272,14 @@ struct LogView: View {
     @State private var exercisesCatalog: [ExerciseCatalog] = []
     @State private var isLoadingExercises = true
     @State private var exerciseLoadFailed = false
+    @State private var isShowingExercisePicker = false
+    @State private var pendingExerciseSelection: ExerciseCatalog?
 
     var body: some View {
         NavigationStack {
             Form {
                 Section("日付") {
                     LogCalendarSection(selectedDate: $selectedDate)
-
-                    Button {
-                        startNewWorkout()
-                    } label: {
-                        Label("＋ 追加", systemImage: "plus.circle.fill")
-                            .fontWeight(.semibold)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .padding(.top, 4)
                 }
 
                 Section("種目") {
@@ -296,14 +289,30 @@ struct LogView: View {
                         Text("種目リストを読み込めませんでした")
                             .foregroundStyle(.secondary)
                     } else {
-                        Picker("種目を選択", selection: $exercise) {
-                            Text("選択してください").tag("")
-                            ForEach(exercisesCatalog, id: \.id) { item in
-                                if item.nameEn.isEmpty {
-                                    Text(item.name).tag(item.name)
-                                } else {
-                                    Text("\(item.name) (\(item.nameEn))").tag(item.name)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Button {
+                                pendingExerciseSelection = currentExerciseCatalogItem()
+                                isShowingExercisePicker = true
+                            } label: {
+                                Label("＋ 追加", systemImage: "plus.circle.fill")
+                                    .fontWeight(.semibold)
+                            }
+                            .buttonStyle(.borderedProminent)
+
+                            if let selected = currentExerciseCatalogItem() {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(selected.name)
+                                        .font(.headline)
+                                    if !selected.nameEn.isEmpty {
+                                        Text(selected.nameEn)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
                                 }
+                            } else {
+                                Text("まだ種目が選択されていません")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -380,6 +389,22 @@ struct LogView: View {
                     isLoadingExercises = false
                 }
             }
+            .sheet(isPresented: $isShowingExercisePicker) {
+                ExercisePickerView(
+                    exercises: exercisesCatalog,
+                    selection: $pendingExerciseSelection,
+                    onCancel: {
+                        pendingExerciseSelection = nil
+                        isShowingExercisePicker = false
+                    },
+                    onComplete: {
+                        guard let selection = pendingExerciseSelection else { return }
+                        exercise = selection.name
+                        pendingExerciseSelection = nil
+                        isShowingExercisePicker = false
+                    }
+                )
+            }
         }
     }
 
@@ -424,14 +449,57 @@ struct LogView: View {
         note = ""
     }
 
-    private func startNewWorkout() {
-        selectedDate = LogDateHelper.normalized(selectedDate)
-        exercise = ""
-        weight = ""
-        reps = ""
-        rpe = ""
-        note = ""
-        draftSets.removeAll()
+    private func currentExerciseCatalogItem() -> ExerciseCatalog? {
+        exercisesCatalog.first { $0.name == exercise }
+    }
+}
+
+// MARK: - 種目ピッカー
+struct ExercisePickerView: View {
+    let exercises: [ExerciseCatalog]
+    @Binding var selection: ExerciseCatalog?
+    let onCancel: () -> Void
+    let onComplete: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            List(exercises, id: \.id) { item in
+                Button {
+                    selection = item
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(item.name)
+                                .font(.body)
+                            if !item.nameEn.isEmpty {
+                                Text(item.nameEn)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        Spacer()
+                        if selection?.id == item.id {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.accentColor)
+                        } else {
+                            Image(systemName: "circle")
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+            .navigationTitle("種目を選択")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("キャンセル", action: onCancel)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("完了", action: onComplete)
+                        .disabled(selection == nil)
+                }
+            }
+        }
     }
 }
 
