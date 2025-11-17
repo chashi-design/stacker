@@ -469,27 +469,29 @@ struct ExercisePickerView: View {
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    List(exercisesCatalog, id: \.id) { item in
-                        Button {
-                            selected = item.id
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(item.name)
-                                    if !item.nameEn.isEmpty {
-                                        Text(item.nameEn)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                    List {
+                        ForEach(exercisesCatalog) { item in
+                            Button {
+                                selected = item.id
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text(item.name)
+                                        if !item.nameEn.isEmpty {
+                                            Text(item.nameEn)
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                    }
+                                    Spacer()
+                                    if selected == item.id {
+                                        Image(systemName: "checkmark")
+                                            .foregroundStyle(.accentColor)
                                     }
                                 }
-                                Spacer()
-                                if selected == item.id {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(.accentColor)
-                                }
                             }
+                            .foregroundStyle(.primary)
                         }
-                        .foregroundStyle(.primary)
                     }
                     .listStyle(.plain)
                 }
