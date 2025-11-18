@@ -1,7 +1,7 @@
 import Foundation
 
 // MARK: - Model (JSONと対応)
-public struct ExerciseCatalog: Codable, Hashable {
+public struct ExerciseCatalog: Codable, Hashable, Identifiable {
     public let id: String
     public let name: String        // 日本語表記
     public let nameEn: String      // 英語表記

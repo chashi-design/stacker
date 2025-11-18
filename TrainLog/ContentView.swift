@@ -148,6 +148,7 @@ struct StatsView: View {
     @State private var selectedRange: StatsRange = .week
 
     var body: some View {
+        let totals = aggregateVolume(range: selectedRange)
         NavigationStack {
             List {
                 // 日別/月別を切り替えるピッカー（スクロールに乗る）
@@ -162,7 +163,6 @@ struct StatsView: View {
 
                 // 棒グラフでボリュームを可視化するエリア
                 Section(header: Text("ボリューム")) {
-                    let totals = aggregateVolume(range: selectedRange)
                     if totals.isEmpty {
                         Text("まだ記録がありません")
                             .foregroundStyle(.secondary)
@@ -179,7 +179,6 @@ struct StatsView: View {
 
                 // 下に数値でも同じ内容を一覧表示（デバッグ・確認しやすくする）
                 Section(header: Text(selectedRange.title)) {
-                    let totals = aggregateVolume(range: selectedRange)
                     ForEach(totals, id: \.date) { item in
                         HStack {
                             Text(dateString(item.date, range: selectedRange))
@@ -196,7 +195,7 @@ struct StatsView: View {
 
     // Workoutのセットから「その日(または月)の合計ボリューム」を出す関数
     private func aggregateVolume(range: StatsRange) -> [StatsItem] {
-        let calendar = Calendar.current
+        let calendar = LogDateHelper.calendar
         var buckets: [Date: Double] = [:]
 
         for workout in workouts {
@@ -224,6 +223,8 @@ struct StatsView: View {
     private func dateString(_ date: Date, range: StatsRange) -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ja_JP")
+        formatter.calendar = LogDateHelper.calendar
+        formatter.timeZone = LogDateHelper.calendar.timeZone
         switch range {
         case .week:
             formatter.dateFormat = "yyyy/MM/dd"
@@ -272,6 +273,8 @@ struct LogView: View {
     @State private var exercisesCatalog: [ExerciseCatalog] = []
     @State private var isLoadingExercises = true
     @State private var exerciseLoadFailed = false
+    @State private var isShowingExercisePicker = false
+    @State private var pendingExercise: ExerciseCatalog?
 
     var body: some View {
         NavigationStack {
@@ -280,13 +283,14 @@ struct LogView: View {
                     LogCalendarSection(selectedDate: $selectedDate)
 
                     Button {
-                        startNewWorkout()
+                        isShowingExercisePicker = true
                     } label: {
                         Label("＋ 追加", systemImage: "plus.circle.fill")
                             .fontWeight(.semibold)
                     }
                     .buttonStyle(.borderedProminent)
                     .padding(.top, 4)
+                    .disabled(isLoadingExercises || exerciseLoadFailed)
                 }
 
                 Section("種目") {
@@ -295,17 +299,12 @@ struct LogView: View {
                     } else if exerciseLoadFailed {
                         Text("種目リストを読み込めませんでした")
                             .foregroundStyle(.secondary)
+                    } else if exercise.isEmpty {
+                        Text("種目が未選択です")
+                            .foregroundStyle(.secondary)
                     } else {
-                        Picker("種目を選択", selection: $exercise) {
-                            Text("選択してください").tag("")
-                            ForEach(exercisesCatalog, id: \.id) { item in
-                                if item.nameEn.isEmpty {
-                                    Text(item.name).tag(item.name)
-                                } else {
-                                    Text("\(item.name) (\(item.nameEn))").tag(item.name)
-                                }
-                            }
-                        }
+                        Text(exercise)
+                            .font(.headline)
                     }
                 }
 
@@ -328,7 +327,7 @@ struct LogView: View {
                     Button("このセットを追加") {
                         addSet()
                     }
-                    .disabled(exercise.isEmpty || weight.isEmpty || reps.isEmpty)
+                    .disabled(exercise.isEmpty || weight.isEmpty || reps.isEmpty || pendingExercise != nil)
                 }
                 
                 // 一時的にためたセット(draftSets)を1つのWorkoutとしてDBに保存
@@ -380,11 +379,21 @@ struct LogView: View {
                     isLoadingExercises = false
                 }
             }
+            .sheet(isPresented: $isShowingExercisePicker, onDismiss: handleExercisePickerDismiss) {
+                ExercisePickerView(
+                    exercisesCatalog: exercisesCatalog,
+                    currentSelection: exercisesCatalog.first(where: { $0.name == exercise })?.id,
+                    onSelect: { selected in
+                        pendingExercise = selected
+                    }
+                )
+            }
         }
     }
 
     // フォームの入力値から一時的なセット(DraftSet)を1件作って配列に追加する
     private func addSet() {
+        guard pendingExercise == nil, !exercise.isEmpty, !weight.isEmpty, !reps.isEmpty else { return }
         let set = DraftSet(
             exerciseName: exercise,
             weight: Double(weight) ?? 0,
@@ -418,20 +427,98 @@ struct LogView: View {
 
         // 保存
         context.insert(workout)
+        do {
+            try context.save()
+        } catch {
+            print("Workout save error:", error)
+        }
 
         // フォームをリセット
         draftSets.removeAll()
         note = ""
     }
 
-    private func startNewWorkout() {
-        selectedDate = LogDateHelper.normalized(selectedDate)
-        exercise = ""
-        weight = ""
-        reps = ""
-        rpe = ""
-        note = ""
-        draftSets.removeAll()
+    private func handleExercisePickerDismiss() {
+        if let pendingExercise {
+            exercise = pendingExercise.name
+            self.pendingExercise = nil
+        }
+    }
+}
+
+struct ExercisePickerView: View {
+    let exercisesCatalog: [ExerciseCatalog]
+    let onSelect: (ExerciseCatalog) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var selected: ExerciseCatalog.ID?
+
+    init(exercisesCatalog: [ExerciseCatalog], currentSelection: ExerciseCatalog.ID?, onSelect: @escaping (ExerciseCatalog) -> Void) {
+        self.exercisesCatalog = exercisesCatalog
+        self.onSelect = onSelect
+        _selected = State(initialValue: currentSelection)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if exercisesCatalog.isEmpty {
+                    ContentUnavailableView(
+                        "種目が見つかりません",
+                        systemImage: "dumbbell",
+                        description: Text("追加できる種目がありません")
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    List {
+                        ForEach(exercisesCatalog) { item in
+                            Button {
+                                selected = item.id
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text(item.name)
+                                        if !item.nameEn.isEmpty {
+                                            Text(item.nameEn)
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                    }
+                                    Spacer()
+                                    if selected == item.id {
+                                        Image(systemName: "checkmark")
+                                            .foregroundStyle(.accentColor)
+                                    }
+                                }
+                            }
+                            .foregroundStyle(.primary)
+                        }
+                    }
+                    .listStyle(.plain)
+                }
+            }
+            .navigationTitle("種目を選択")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("キャンセル") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("追加") {
+                        confirmSelection()
+                    }
+                    .disabled(selected == nil)
+                }
+            }
+        }
+    }
+
+    private func confirmSelection() {
+        guard let selected,
+              let exercise = exercisesCatalog.first(where: { $0.id == selected })
+        else { return }
+        onSelect(exercise)
+        dismiss()
     }
 }
 
@@ -439,7 +526,7 @@ struct LogView: View {
 struct LogCalendarSection: View {
     @Binding var selectedDate: Date
     @State private var displayMonth: Date
-    private let calendar = Calendar.current
+    private let calendar = LogDateHelper.calendar
     private let weekdaySymbols = ["日", "月", "火", "水", "木", "金", "土"]
 
     init(selectedDate: Binding<Date>) {
@@ -556,12 +643,14 @@ struct LogCalendarSection: View {
     private var monthTitle: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ja_JP")
+        formatter.calendar = LogDateHelper.calendar
+        formatter.timeZone = LogDateHelper.calendar.timeZone
         formatter.dateFormat = "yyyy年 M月"
         return formatter.string(from: displayMonth)
     }
 
     private static func monthStart(for date: Date) -> Date {
-        let calendar = Calendar.current
+        let calendar = LogDateHelper.calendar
         let components = calendar.dateComponents([.year, .month], from: date)
         return calendar.date(from: components) ?? date
     }
