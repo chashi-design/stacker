@@ -418,6 +418,12 @@ struct LogView: View {
 
         // 保存
         context.insert(workout)
+        do {
+            try context.save()
+        } catch {
+            // 失敗してもユーザーの操作を止めないが、原因調査のためログに残す
+            print("Workout save error:", error)
+        }
 
         // フォームをリセット
         draftSets.removeAll()
