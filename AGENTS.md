@@ -1,88 +1,103 @@
-# AGENTS.md – iOS App (SwiftUI)
+# AGENTS.md – TrainLog iOS App (SwiftUI)
 
 ## Mission / Goal
-- このリポジトリでは iOS アプリを開発する。
-- 目的: ユーザーのトレーニングログを簡単に記録・閲覧・分析できるアプリを作る。
+- このリポジトリでは **トレーニングログを記録・閲覧・分析できる iOS アプリ**を開発する。
+- 目的: 入力のしやすさ・履歴管理のしやすさ・統計のわかりやすさを重視したアプリ体験を実現する。
 - 対象OS: iOS 17 以上。
 
+---
 
 ## Tech Stack & Constraints
-- 言語: Swift 5.x
-- UI: SwiftUI （Storyboard / UIKit ベースの画面は原則追加しない）
-- データ永続化: SwiftData（必要に応じて拡張）
-- アーキテクチャ: MVVM ベース
-  - View: SwiftUI View
-  - ViewModel: ObservableObject / @StateObject / @EnvironmentObject
-  - Model: データ構造 / SwiftData モデル
-- サードパーティライブラリ:
-  - 追加する場合は必ず提案と理由を示し、ユーザーに確認してからにする。
-  
-  ## Project Structure
-- Xcode プロジェクト: `YourAppName.xcodeproj`
-- アプリソースコード: `YourAppName/` ディレクトリ配下
-  - `Views/`        … 画面（SwiftUI View）
-  - `ViewModels/`   … ViewModel
-  - `Models/`       … データモデル（SwiftDataを含む）
-  - `Services/`     … データ保存やAPIなどのサービス層
-  - `Resources/`    … Asset, Strings など
-  
-  ### ビルド・テスト
-- 通常ビルド: Xcode でターゲット `YourAppName` を選択して Run
-- コマンドライン（あれば）:
-  - `xcodebuild -scheme YourAppName -destination 'platform=iOS Simulator,name=iPhone 16'`
+- 言語: **Swift 5.x**
+- UI: **SwiftUI**（UIKit を新規作成することは禁止）
+- 永続化: **SwiftData**
+- 構造: **MVVM 準拠**
+  - View = 表示・入力
+  - ViewModel = ビジネスロジック / 状態管理
+  - Model = SwiftData データモデル
 
-テストやビルド方法を変更した場合は、このセクションを更新してほしい。
+---
 
+## Project Structure（※このプロジェクト実際の構造に合わせる）
+- `/TrainLog/` … アプリ本体
+  - `ContentView.swift`
+  - `WorkoutListView.swift`
+  - `LogDateHelper.swift`
+  - `SearchEngine.swift`
+  - `Models.swift`
+- `/TrainLogTests/` … テスト
+- `.xcodeproj` / `.xcworkspace` … プロジェクト構成
 
-## Code Style
-- 型名（struct / class / enum / protocol）: PascalCase  
-  - 例: `WorkoutSessionViewModel`, `ExerciseDetailView`
-- 変数・関数名: camelCase  
-  - 例: `loadWorkouts()`, `selectedExercise`
-- コメント: 基本日本語で、丁寧に記載 
-- 1ファイルが 300 行を超える場合は、責務に応じて分割を検討する。
-- SwiftUI View は可能ならプレビュー用の `#Preview` を用意する。
+---
+
+## Coding Style
+- 型名: **PascalCase**
+- 変数・関数名: **camelCase**
+- コメント: 日本語で OK
+- SwiftUI ファイルは `#Preview` をできるだけ用意
+- 1 ファイルが 300 行超えたら分割を検討
+
+---
 
 ## Architecture Guidelines
-- 画面ごとに View + ViewModel をセットで用意する:
-  - 例: `WorkoutListView` と `WorkoutListViewModel`
-- View はできるだけロジックを持たず、状態管理と表示に集中させる。
-- ビジネスロジックやデータ取得は ViewModel / Service に置く。
+- View はロジックを持たず、UI・状態反映に専念する
+- ビジネスロジックは ViewModel に置く
+- SwiftData モデル変更時は後方互換性を常に意識する
+- モーダルや複雑 UI はコンポーネントとして分離する（PickerView / SetEditorView など）
 
-## Roadmap（例なので適宜編集）
-### v0.1 (MVP)
-- 種目の選択
-- 体重/回数/セット数の入力
-- トレーニング履歴一覧
+---
+
+## Agent Workflow（Codex が「作業中に守るべきルール」）
+1. **まず変更予定のファイル一覧を提示すること**
+2. 作業は **小さなステップ**に分割すること  
+   （大規模変更を一度に行わない）
+3. 各ステップの前に **意図と処理内容を説明**すること
+4. 必ず **diff を提示してから**適用すること
+5. 依存ファイルがありそうな場合は確認してから触ること
+6. SwiftUI の Navigation / State / Binding を壊さないよう注意すること
+7. SwiftData の保存ロジックは `context.save()` を必ず確認すること
+
+---
+
+## What the Agent Should Prioritize（特に重要）
+- **ログ画面（入力UI）の改善**
+- **SearchEngine.swift の検索・サジェスト改善**
+- **SwiftData モデルの整合性チェック**
+- **統計画面の正確な集計**
+- **UI/UX 改善提案（過剰な変更は禁止）**
+
+---
+
+## Please Avoid
+- サードパーティライブラリを無断で導入すること
+- 既存コードの「全面書き換え」を提案すること
+- Project 設定の大規模変更
+- 名前変更やファイル移動を突然行うこと
+- MVVM を壊す実装
+
+---
+
+## When to Ask the User
+- SwiftData モデルのフィールド追加/削除
+- 画面遷移方法を変える場合（sheet → navigation など）
+- UI が大きく変わる場合（特にログ入力UI）
+- 関連ファイルを大幅に増やす場合
+
+---
+
+## Roadmap
+### v0.1
+- 種目一覧
+- ログ入力（シンプル）
+- 履歴表示
 - ローカル保存（SwiftData）
 
-### v0.2
-- 統計画面（グラフ）
-- 種目検索/サジェストの改善
+### v0.2（現在ここ）
+- 入力UIの大幅改善（モーダル式）
+- 統計画面の強化
+- SearchEngine の賢さ改善
 
 ### v1.0
 - iCloud 同期
-- UI 調整・エラー処理・TestFlight 配布準備
-
-## What the Agent Should Prioritize
-- 既存の SwiftUI コードのリファクタリング（責務分離、命名改善）
-- 新しい画面を追加する場合は、まず View + ViewModel の雛形提案から始める
-- 検索ロジックや SwiftData モデル設計の改善提案
-- ビルドエラーや SwfitUI のコンパイルエラーが出た場合の修正
-
-## Git Workflow
-- メインブランチ: `main`
-- 新機能: `feature/...` ブランチを作成して作業する。
-- コミットメッセージ:
-  - 英語で要約（例: `Add workout history list view`）
-
-## Please Avoid
-- サードパーティライブラリの追加を、ユーザーに相談なく行うこと。
-- 既存コードの大規模削除や全面書き換えを、理由なく提案すること。
-- Xcode プロジェクト設定の大きな変更（Bundle ID 変更など）を黙って行うこと。
-
-## When to Ask the User
-- データモデルを後方互換性を壊す形で変更する場合
-- 画面のUI/UXで選択肢が複数ある場合
-- 新しいライブラリ導入を検討する場合
-
+- UI polished / エラー処理強化
+- TestFlight
