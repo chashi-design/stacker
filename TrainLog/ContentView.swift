@@ -6,6 +6,7 @@
 // - タブをまとめるContentView
 // SwiftDataで保存されたWorkout/ExerciseSetのデータを読み書きします。
 //
+import UIKit
 import SwiftData
 import SwiftUI
 import Charts
@@ -606,32 +607,38 @@ struct SetEditorSheet: View {
                     Section(header: Text(entry.exerciseName)) {
                         ForEach(entry.sets) { set in
                             HStack {
-                                TextField("重量(kg)", text: Binding(
-                                    get: { viewModel.weightText(exerciseID: exerciseID, setID: set.id) },
-                                    set: { viewModel.updateSetRow(exerciseID: exerciseID, setID: set.id, weightText: $0, repsText: viewModel.repsText(exerciseID: exerciseID, setID: set.id)) }
-                                ))
+                                TextField(
+                                    "重量(kg)",
+                                    text: Binding(
+                                        get: { viewModel.weightText(exerciseID: exerciseID, setID: set.id) },
+                                        set: { viewModel.updateSetRow(exerciseID: exerciseID, setID: set.id, weightText: $0, repsText: viewModel.repsText(exerciseID: exerciseID, setID: set.id)) }
+                                    )
+                                )
                                 .keyboardType(.decimalPad)
                                 .frame(width: 90)
 
-                                TextField("レップ数", text: Binding(
-                                    get: { viewModel.repsText(exerciseID: exerciseID, setID: set.id) },
-                                    set: { viewModel.updateSetRow(exerciseID: exerciseID, setID: set.id, weightText: viewModel.weightText(exerciseID: exerciseID, setID: set.id), repsText: $0) }
-                                ))
+                                TextField(
+                                    "レップ数",
+                                    text: Binding(
+                                        get: { viewModel.repsText(exerciseID: exerciseID, setID: set.id) },
+                                        set: { viewModel.updateSetRow(exerciseID: exerciseID, setID: set.id, weightText: viewModel.weightText(exerciseID: exerciseID, setID: set.id), repsText: $0) }
+                                    )
+                                )
                                 .keyboardType(.numberPad)
                                 .frame(width: 80)
 
                                 Spacer()
 
-                            Button(role: .destructive) {
-                                viewModel.removeSetRow(exerciseID: exerciseID, setID: set.id)
-                            } label: {
-                                Image(systemName: "minus.circle.fill")
-                                    .foregroundStyle(.red)
-                            
-                            .buttonStyle(.plain)
-                            .disabled(entry.sets.count <= 1)
+                                Button(role: .destructive) {
+                                    viewModel.removeSetRow(exerciseID: exerciseID, setID: set.id)
+                                } label: {
+                                    Image(systemName: "minus.circle.fill")
+                                        .foregroundStyle(.red)
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(entry.sets.count <= 1)
+                            }
                         }
-                    }
 
                         Button {
                             viewModel.addSetRow(to: exerciseID)
