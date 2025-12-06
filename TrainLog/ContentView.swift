@@ -19,6 +19,7 @@ struct HistoryView: View {
     // SwiftDataに保存されているWorkoutを自動的に取得する
     // \Workout.date を基準に降順(.reverse)で並べています
     @Query(sort: \Workout.date, order: .reverse) private var workouts: [Workout]
+    @Environment(\.modelContext) private var context
 
     var body: some View {
         NavigationStack {
@@ -49,7 +50,15 @@ struct HistoryView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
+                        .swipeActions {
+                            Button(role: .destructive) {
+                                delete(workout: workout)
+                            } label: {
+                                Label("削除", systemImage: "trash")
+                            }
+                        }
                     }
+                    .onDelete(perform: deleteWorkouts)
                 }
             }
             .navigationTitle("履歴")
@@ -63,6 +72,18 @@ struct HistoryView: View {
         formatter.dateFormat = "yyyy/MM/dd HH:mm"
         return formatter.string(from: date)
     }
+
+    private func delete(workout: Workout) {
+        context.delete(workout)
+        try? context.save()
+    }
+
+    private func deleteWorkouts(atOffsets offsets: IndexSet) {
+        for index in offsets {
+            guard workouts.indices.contains(index) else { continue }
+            delete(workout: workouts[index])
+        }
+    }
 }
 
 // MARK: - アプリ全体のタブをまとめるビュー
@@ -73,12 +94,6 @@ struct ContentView: View {
             OverviewTabView()
                 .tabItem {
                     Label("概要", systemImage: "square.grid.2x2")
-                }
-
-            // 保存されたデータを元にボリュームを集計・グラフ表示する画面
-            StatsView()
-                .tabItem {
-                    Label("統計", systemImage: "chart.line.uptrend.xyaxis")
                 }
 
             // 新しいトレーニングを入力する画面

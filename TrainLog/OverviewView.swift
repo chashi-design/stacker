@@ -90,8 +90,8 @@ struct OverviewVolumeCard: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(Color(.tertiarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 26))
     }
 }
 
@@ -139,6 +139,7 @@ struct OverviewMuscleCard: View {
     let monthLabel: String
     let volume: Double
     let locale: Locale
+    var chevronColor: Color = .secondary
 
     var body: some View {
         HStack(alignment: .center) {
@@ -155,12 +156,14 @@ struct OverviewMuscleCard: View {
             }
             Spacer()
             Image(systemName: "chevron.right")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.tertiary)
+                .imageScale(.small)
+                .font(.system(size: 14, weight: .bold))
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(Color(.tertiarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 26))
     }
 }
 
