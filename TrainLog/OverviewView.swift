@@ -211,10 +211,8 @@ struct ExerciseVolumeChart: View {
             .padding(.bottom, 12)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedCorner(radius: 26, corners: [.bottomLeft, .bottomRight])
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
+        .background(Color(.secondarySystemGroupedBackground))
+
     }
 }
 
@@ -226,7 +224,6 @@ struct OverviewPartsView: View {
     let workouts: [Workout]
 
     @State private var filter: PartsFilter = .all
-    @State private var chartPeriod: PartsChartPeriod = .day
     private let calendar = Calendar.current
     private let locale = Locale(identifier: "ja_JP")
 
@@ -239,53 +236,52 @@ struct OverviewPartsView: View {
         )
     }
     
+    private var weeklySeries: [VolumePoint] {
+        OverviewMetrics.weeklyMuscleGroupVolumes(
+            muscleGroup: muscleGroup,
+            workouts: workouts,
+            exercises: exercises,
+            calendar: calendar,
+            weeks: 8
+        )
+    }
+
     private var chartData: [(label: String, value: Double)] {
-        switch chartPeriod {
-        case .day:
-            let series = OverviewMetrics.dailyMuscleGroupVolumes(
-                muscleGroup: muscleGroup,
-                workouts: workouts,
-                exercises: exercises,
-                calendar: calendar,
-                days: 7
-            )
-            return series.map { (axisLabel(for: $0.date, period: .day), $0.volume) }
-        case .week:
-            let series = OverviewMetrics.weeklyMuscleGroupVolumes(
-                muscleGroup: muscleGroup,
-                workouts: workouts,
-                exercises: exercises,
-                calendar: calendar,
-                weeks: 8
-            )
-            return series.map { (axisLabel(for: $0.date, period: .week), $0.volume) }
-        case .month:
-            let series = OverviewMetrics.monthlyMuscleGroupVolumes(
-                muscleGroup: muscleGroup,
-                workouts: workouts,
-                exercises: exercises,
-                calendar: calendar,
-                months: 6
-            )
-            return series.map { (axisLabel(for: $0.date, period: .month), $0.volume) }
-        }
+        weeklySeries
+            .sorted { $0.date < $1.date }
+            .map { (axisLabel(for: $0.date), $0.volume) }
+    }
+    
+    private var weeklyListData: [(label: String, value: Double)] {
+        weeklySeries
+            .sorted { $0.date > $1.date }
+            .map { (weekRangeLabel(for: $0.date), $0.volume) }
     }
 
     var body: some View {
         List {
             Section("ボリューム") {
-                Picker("期間", selection: $chartPeriod) {
-                    ForEach(PartsChartPeriod.allCases, id: \.self) { option in
-                        Text(option.title).tag(option)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, 4)
-
                 ExerciseVolumeChart(data: chartData)
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
+                
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(weeklyListData.enumerated()), id: \.offset) { index, item in
+                        HStack {
+                            Text(item.label)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(VolumeFormatter.string(from: item.value, locale: locale))
+                                .font(.subheadline.weight(.semibold))
+                        }
+                        .padding(.vertical, 8)
+                        if index < weeklyListData.count - 1 {
+                            Divider()
+                        }
+                    }
+                }
+                .padding(.horizontal, 12)
             }
 
             Section("種別") {
@@ -336,16 +332,19 @@ struct OverviewPartsView: View {
         }
     }
 
-    private func axisLabel(for date: Date, period: PartsChartPeriod) -> String {
+    private func axisLabel(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = locale
-        switch period {
-        case .day, .week:
-            formatter.dateFormat = "M/d"
-        case .month:
-            formatter.dateFormat = "M月"
-        }
+        formatter.dateFormat = "M/d"
         return formatter.string(from: date)
+    }
+    
+    private func weekRangeLabel(for date: Date) -> String {
+        let start = calendar.startOfWeek(for: date) ?? date
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.dateFormat = "M/d"
+        return "\(formatter.string(from: start))週"
     }
 }
 
@@ -357,20 +356,6 @@ enum PartsFilter: CaseIterable {
         switch self {
         case .all: return "すべて"
         case .completed: return "実施済み"
-        }
-    }
-}
-
-enum PartsChartPeriod: CaseIterable {
-    case day
-    case week
-    case month
-
-    var title: String {
-        switch self {
-        case .day: return "日"
-        case .week: return "週"
-        case .month: return "月"
         }
     }
 }
