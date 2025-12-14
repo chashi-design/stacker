@@ -1,6 +1,6 @@
 import SwiftUI
 
-// SwiftUI製カレンダー（PageTabViewStyleで隣接月がスライド表示）
+// SwiftUI製カレンダー（PageTabViewStyleで隣接月がスライド表示、固定高さでアニメーション安定）
 struct LogCalendarSection: View {
     @Binding var selectedDate: Date
     let workoutDots: [Date: [Color]]
@@ -8,10 +8,18 @@ struct LogCalendarSection: View {
     @State private var months: [Date]
     @State private var selectionIndex: Int
 
+    private var currentMonth: Date {
+        months[safe: selectionIndex] ?? LogCalendarSection.startOfMonth(calendar, date: selectedDate)
+    }
+
     private let today = LogDateHelper.normalized(Date())
     private let calendar = Calendar.current
     private let locale = Locale(identifier: "ja_JP")
-    private let calendarHeight: CGFloat = 420
+    private let containerHeight: CGFloat = 312
+    private let baseRowHeight: CGFloat = 40
+    private let baseSpacing: CGFloat = 0
+    private let calendarPadding: CGFloat = 0
+    private let minCalendarHeight: CGFloat = 312
 
     init(selectedDate: Binding<Date>, workoutDots: [Date: [Color]]) {
         _selectedDate = selectedDate
@@ -35,14 +43,14 @@ struct LogCalendarSection: View {
             pager
         }
         .padding(.vertical, 4)
-        .onChange(of: selectedDate) { newValue in
+        .onChange(of: selectedDate, initial: false) { _, newValue in
             let month = LogCalendarSection.startOfMonth(calendar, date: newValue)
             ensureMonthIncluded(month)
             if let idx = months.firstIndex(of: month) {
                 selectionIndex = idx
             }
         }
-        .onChange(of: workoutDots.count) { _ in
+        .onChange(of: workoutDots.count, initial: false) { _, _ in
             let currentMonth = months[safe: selectionIndex] ?? LogCalendarSection.startOfMonth(calendar, date: selectedDate)
             months = LogCalendarSection.buildMonths(
                 calendar: calendar,
@@ -63,12 +71,13 @@ struct LogCalendarSection: View {
             } label: {
                 Image(systemName: "chevron.left")
                     .foregroundStyle(Color.accentColor)
+                    .font(.system(size: 17, weight: .bold))
             }
 
             Spacer()
 
             Text(monthTitle(for: month))
-                .font(.title2.bold())
+                .font(.title3.bold())
 
             Spacer()
 
@@ -77,6 +86,7 @@ struct LogCalendarSection: View {
             } label: {
                 Image(systemName: "chevron.right")
                     .foregroundStyle(isNextMonthBeyondToday(month) ? Color.secondary : Color.accentColor)
+                    .font(.system(size: 17, weight: .bold))
             }
             .disabled(isNextMonthBeyondToday(month))
         }
@@ -103,8 +113,8 @@ struct LogCalendarSection: View {
             }
         }
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-        .frame(height: calendarHeight)
-        .onChange(of: selectionIndex) { newValue in
+        .frame(height: containerHeight, alignment: .top)
+        .onChange(of: selectionIndex, initial: false) { _, newValue in
             guard months.indices.contains(newValue) else { return }
             let month = months[newValue]
             if !calendar.isDate(selectedDate, equalTo: month, toGranularity: .month) {
@@ -117,32 +127,49 @@ struct LogCalendarSection: View {
 
     private func calendarPage(for month: Date) -> some View {
         let days = daysInMonth(month: month)
-        let rows = Int(ceil(Double(days.count) / 7.0))
-        let rowHeight: CGFloat = 48
-        let spacing: CGFloat = 8
-        let estimatedHeight = max(calendarHeight - 40, CGFloat(rows) * rowHeight + CGFloat(max(rows - 1, 0)) * spacing)
+        let rows = rowsInMonth(month)
+        let rowHeight = rows > 0 ? max(36, min(52, containerHeight / CGFloat(rows))) : 52
+        let spacing = rows > 0 ? max(4, min(12, (containerHeight - CGFloat(rows) * rowHeight) / CGFloat(max(rows - 1, 1)))) : 10
+        let contentHeight = CGFloat(rows) * rowHeight + CGFloat(max(rows - 1, 0)) * spacing + calendarPadding
 
-        return LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: spacing) {
-            ForEach(days.indices, id: \.self) { index in
-                if let date = days[index] {
-                    dayCell(for: date)
-                } else {
-                    Color.clear.frame(height: rowHeight)
+        return VStack(spacing: 0) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: spacing) {
+                ForEach(days.indices, id: \.self) { index in
+                    if let date = days[index] {
+                        dayCell(for: date)
+                    } else {
+                        Color.clear.frame(height: rowHeight)
+                    }
                 }
             }
+            .padding(.horizontal, 4)
+            Spacer(minLength: max(0, containerHeight - contentHeight))
         }
-        .padding(.horizontal, 4)
-        .frame(minHeight: estimatedHeight)
+        .frame(height: containerHeight, alignment: .top)
+    }
+
+    private func rowsInMonth(_ month: Date) -> Int {
+        let days = daysInMonth(month: month)
+        return Int(ceil(Double(days.count) / 7.0))
+    }
+
+    private func gridHeight(rows: Int) -> CGFloat {
+        CGFloat(rows) * baseRowHeight + CGFloat(max(rows - 1, 0)) * baseSpacing + calendarPadding
     }
 
     private func dayCell(for date: Date) -> some View {
         let isSelected = calendar.isDate(date, inSameDayAs: selectedDate)
+        let isToday = calendar.isDate(date, inSameDayAs: today)
         let dots = workoutDots[calendar.startOfDay(for: date)] ?? []
 
         return VStack(spacing: 6) {
             Text("\(calendar.component(.day, from: date))")
-                .font(.body.weight(isSelected ? .bold : .regular))
-                .foregroundStyle(isSelected ? Color.white : Color.primary)
+                .font(.body.weight(isSelected ? .bold : .semibold))
+                .foregroundStyle(
+                    isSelected ? Color.white :
+                        (isToday ? Color.accentColor : Color.primary)
+            
+                )
                 .frame(maxWidth: .infinity)
                 .padding(8)
                 .background(
@@ -150,14 +177,14 @@ struct LogCalendarSection: View {
                         .fill(isSelected ? Color.accentColor : Color.clear)
                 )
 
-            HStack(spacing: 3) {
+            HStack(spacing: 2) {
                 ForEach(Array(dots.prefix(3)).indices, id: \.self) { idx in
                     Circle()
                         .fill(dots[idx])
-                        .frame(width: 6, height: 6)
+                        .frame(width: 5, height: 5)
                 }
             }
-            .frame(height: 10)
+            .frame(height: 6)
         }
         .frame(height: 48)
         .contentShape(Rectangle())
@@ -191,7 +218,9 @@ struct LogCalendarSection: View {
         if !allowFuture && calendar.compare(newMonth, to: today, toGranularity: .month) == .orderedDescending {
             return
         }
-        selectionIndex = newIndex
+        withAnimation(.easeInOut(duration: 0.25)) {
+            selectionIndex = newIndex
+        }
         if !calendar.isDate(selectedDate, equalTo: newMonth, toGranularity: .month) {
             if let first = calendar.date(from: calendar.dateComponents([.year, .month], from: newMonth)) {
                 selectedDate = LogDateHelper.normalized(first)
