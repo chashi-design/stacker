@@ -14,23 +14,21 @@ struct LogView: View {
             Form {
                 LogCalendarSection(selectedDate: $viewModel.selectedDate)
 
-                Button {
-                    preparePickerSelection()
-                    isShowingExercisePicker = true
-                } label: {
-                    Text("種目を追加")
-                        .symbolRenderingMode(.monochrome)
-                        .foregroundStyle(.primary)
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                }
-                .frame(maxWidth: .infinity)
-                .buttonStyle(.borderedProminent)
-                .disabled(viewModel.isLoadingExercises || viewModel.exerciseLoadFailed)
-                .listRowInsets(EdgeInsets())
-                .padding(.horizontal, 10)
-
                 Section("今回の種目") {
+                    HStack {
+                        Text("種目を追加")
+                            .fontWeight(.semibold)
+                        Spacer()
+                        Image(systemName: "plus.circle.fill")
+                    }
+                    .foregroundStyle(.tint)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        preparePickerSelection()
+                        isShowingExercisePicker = true
+                    }
+                    .padding(.vertical, 8)
+
                     if viewModel.draftExercises.isEmpty {
                         Text("追加された種目はありません。＋から追加してください。")
                             .foregroundStyle(.secondary)
