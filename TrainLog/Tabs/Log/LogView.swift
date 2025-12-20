@@ -5,6 +5,7 @@ import SwiftUI
 struct LogView: View {
     @Environment(\.modelContext) private var context
     @StateObject private var viewModel = LogViewModel()
+    @StateObject private var favoritesStore = ExerciseFavoritesStore()
     @Query(sort: \Workout.date, order: .reverse) private var workoutsQuery: [Workout]
     private var workouts: [Workout] { workoutsQuery }
     @State private var isShowingExercisePicker = false
@@ -50,6 +51,7 @@ struct LogView: View {
                         isShowingExercisePicker = false
                     }
                 )
+                .environmentObject(favoritesStore)
             }
             .sheet(item: $selectedExerciseForEdit) { entry in
                 SetEditorSheet(viewModel: viewModel, exerciseID: entry.id)
@@ -64,7 +66,7 @@ struct LogView: View {
             }
             .environment(\.editMode, $editMode)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .topBarLeading) {
                     if editMode.isEditing {
                         Button {
                             isShowingDeleteAlert = true
@@ -87,8 +89,21 @@ struct LogView: View {
                         }
                         .buttonStyle(.borderedProminent)
                     } else {
-                        Button("編集") {
+                        Button {
                             editMode = .active
+                        } label: {
+                            Text("編集")
+                        }
+                    }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if !editMode.isEditing {
+                        Button {
+                            preparePickerSelection()
+                            isShowingExercisePicker = true
+                        } label: {
+                            Image(systemName: "plus")
                         }
                     }
                 }
@@ -150,10 +165,6 @@ struct LogView: View {
 
     private var exerciseSection: some View {
         Section("今回の種目") {
-            if !editMode.isEditing {
-                addExerciseRow
-            }
-
             if viewModel.draftExercises.isEmpty {
                 Text("追加された種目はありません。＋から追加してください。")
                     .foregroundStyle(.secondary)
@@ -174,7 +185,7 @@ struct LogView: View {
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(entry.exerciseName)
-                                    .font(.body)
+                                    .font(.headline)
                                 let weight = totalWeight(for: entry)
                                 Text("\(entry.completedSetCount)セット (\(weight)kg)")
                                     .font(.caption)
@@ -201,22 +212,6 @@ struct LogView: View {
                 }
             }
         }
-    }
-
-    private var addExerciseRow: some View {
-        HStack(spacing: 16) {
-            Image(systemName: "plus.circle.fill")
-            Text("種目を追加")
-                .font(.body.weight(.regular))
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .foregroundStyle(.tint)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            preparePickerSelection()
-            isShowingExercisePicker = true
-        }
-        .padding(.vertical, 8)
     }
 
     private func toggleSelection(for id: UUID) {

@@ -7,6 +7,7 @@ struct ExercisePickerSheet: View {
     @Binding var selections: Set<String>
     var onCancel: () -> Void
     var onComplete: () -> Void
+    @EnvironmentObject private var favoritesStore: ExerciseFavoritesStore
     @State private var selectedGroup: String?
     @State private var searchText: String = ""
 
@@ -58,8 +59,9 @@ struct ExercisePickerSheet: View {
                 }
         }
         .onAppear {
-            if selectedGroup == nil {
-                selectedGroup = muscleGroups.first
+            selectedGroup = "favorites"
+            if selections.isEmpty, let first = firstExerciseID(for: "favorites") ?? firstExerciseID(for: defaultGroup) {
+                selections.insert(first)
             }
         }
         .onChange(of: selectedGroup) { _, newValue in
@@ -111,17 +113,12 @@ struct ExercisePickerSheet: View {
         let groups = Set(exercises.map { $0.muscleGroup })
         let ordered = muscleGroupOrder.filter { groups.contains($0) }
         let remaining = groups.subtracting(muscleGroupOrder).sorted()
-        return ["all"] + ordered + remaining
+        return ["favorites"] + ordered + remaining
     }
 
     private var filteredExercises: [ExerciseCatalog] {
         guard let group = selectedGroup else { return [] }
-        let byGroup: [ExerciseCatalog]
-        if group == "all" {
-            byGroup = exercises
-        } else {
-            byGroup = exercises.filter { $0.muscleGroup == group }
-        }
+        let byGroup = exercises(for: group)
 
         let searched: [ExerciseCatalog]
         if searchText.trimmingCharacters(in: .whitespaces).isEmpty {
@@ -136,6 +133,26 @@ struct ExercisePickerSheet: View {
         }
 
         return searched.sorted { $0.name < $1.name }
+    }
+
+    private var favoriteExercises: [ExerciseCatalog] {
+        exercises.filter { favoritesStore.favoriteIDs.contains($0.id) }
+    }
+
+    private var defaultGroup: String {
+        if !favoriteExercises.isEmpty {
+            return "favorites"
+        }
+        return muscleGroups.first(where: { !exercises(for: $0).isEmpty }) ?? muscleGroups.first ?? "favorites"
+    }
+
+    private func exercises(for group: String) -> [ExerciseCatalog] {
+        switch group {
+        case "favorites":
+            return favoriteExercises
+        default:
+            return exercises.filter { $0.muscleGroup == group }
+        }
     }
 
     private func muscleColor(for key: String) -> Color {
@@ -159,7 +176,7 @@ struct ExercisePickerSheet: View {
 
     private func muscleGroupLabel(_ key: String) -> String {
         switch key {
-        case "all": return "すべて"
+        case "favorites": return "登録"
         case "chest": return "胸"
         case "shoulders": return "肩"
         case "arms": return "腕"
@@ -171,7 +188,7 @@ struct ExercisePickerSheet: View {
     }
 
     private func firstExerciseID(for group: String) -> String? {
-        filteredExercises.first(where: { $0.muscleGroup == group })?.id
+        exercises(for: group).first?.id
     }
 }
 
