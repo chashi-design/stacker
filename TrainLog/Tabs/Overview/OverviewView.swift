@@ -648,24 +648,6 @@ enum OverviewMetrics {
     }
 }
 
-// MARK: - Utilities
-
-enum MuscleGroupLabel {
-    static func label(for key: String) -> String {
-        labels[key, default: key]
-    }
-
-    private static let labels: [String: String] = [
-        "chest": "胸",
-        "back": "背中",
-        "shoulders": "肩",
-        "arms": "腕",
-        "legs": "脚",
-        "abs": "腹筋",
-        "other": "その他"
-    ]
-}
-
 enum VolumeFormatter {
     static func string(from volume: Double, locale: Locale) -> String {
         let formatter = NumberFormatter()

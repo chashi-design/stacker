@@ -8,10 +8,10 @@ enum MuscleGroupColor {
     private static let palette: [String: Color] = [
         "chest": .red,
         "shoulders": .orange,
-        "arms": .yellow,
-        "back": .green,
-        "legs": .teal,
-        "abs": .indigo,
+        "arms": .green,
+        "back": .teal,
+        "legs": .purple,
+        "abs": .brown,
         "other": .gray
     ]
 }
