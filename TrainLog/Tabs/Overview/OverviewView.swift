@@ -16,7 +16,7 @@ struct OverviewTabView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     OverviewMuscleGrid(
-                        volumes: OverviewMetrics.muscleGroupVolumesForCurrentMonth(
+                        volumes: OverviewMetrics.muscleGroupVolumesForCurrentWeek(
                             workouts: workouts,
                             exercises: exercises,
                             calendar: calendar
@@ -87,7 +87,7 @@ struct OverviewMuscleGrid: View {
                     } label: {
                         OverviewMuscleCard(
                             title: item.displayName,
-                            monthLabel: "当月",
+                            monthLabel: weekRangeLabel(for: Date()),
                             volume: item.volume,
                             locale: locale,
                             titleColor: MuscleGroupColor.color(for: item.muscleGroup)
@@ -97,6 +97,14 @@ struct OverviewMuscleGrid: View {
                 }
             }
         }
+    }
+
+    private func weekRangeLabel(for date: Date) -> String {
+        let start = Calendar.appCurrent.startOfWeek(for: date) ?? date
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.dateFormat = "M/d"
+        return "\(formatter.string(from: start))週"
     }
 }
 
@@ -239,12 +247,12 @@ enum OverviewMetrics {
             .sorted { $0.date < $1.date }
     }
 
-    static func muscleGroupVolumesForCurrentMonth(
+    static func muscleGroupVolumesForCurrentWeek(
         workouts: [Workout],
         exercises: [ExerciseCatalog],
         calendar: Calendar
     ) -> [MuscleGroupVolume] {
-        guard let range = calendar.dateInterval(of: .month, for: Date()) else { return [] }
+        guard let range = calendar.dateInterval(of: .weekOfYear, for: Date()) else { return [] }
         let lookup = Dictionary(uniqueKeysWithValues: exercises.map { ($0.name, $0) })
         var muscleGroups: [String] = ["chest", "shoulders", "arms", "back", "legs", "abs", "other"]
         var buckets: [String: Double] = [:]

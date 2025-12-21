@@ -26,7 +26,7 @@ struct LogView: View {
                     hideKeyboard()
                 }
             )
-            .navigationTitle("トレーニングログ")
+            .navigationTitle("メモ")
                 .task {
                     await viewModel.loadExercises()
                     viewModel.syncDraftsForSelectedDate(context: context)
@@ -55,6 +55,9 @@ struct LogView: View {
             .onChange(of: viewModel.selectedDate) { _, _ in
                 viewModel.syncDraftsForSelectedDate(context: context)
             }
+            .onReceive(viewModel.$draftExercises) { _ in
+                viewModel.saveWorkout(context: context)
+            }
             .onChange(of: editMode) { oldValue, newValue in
                 if !newValue.isEditing {
                     selectedEntriesForDeletion.removeAll()
@@ -73,22 +76,6 @@ struct LogView: View {
                     } else {
                         Button("今日") {
                             viewModel.selectedDate = LogDateHelper.normalized(Date())
-                        }
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    if editMode.isEditing {
-                        Button {
-                            editMode = .inactive
-                        } label: {
-                            Label("完了", systemImage: "checkmark")
-                        }
-                        .buttonStyle(.borderedProminent)
-                    } else {
-                        Button {
-                            editMode = .active
-                        } label: {
-                            Image(systemName: "pencil")
                         }
                     }
                 }

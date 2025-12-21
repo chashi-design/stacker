@@ -50,9 +50,20 @@ final class LogViewModel: ObservableObject {
 
     func saveWorkout(context: ModelContext) {
         let savedSets = buildExerciseSets()
-        guard !savedSets.isEmpty else { return }
-
         let normalizedDate = LogDateHelper.normalized(selectedDate)
+
+        if savedSets.isEmpty {
+            if let existing = findWorkout(on: normalizedDate, context: context) {
+                context.delete(existing)
+                do {
+                    try context.save()
+                    draftsCache[normalizedDate] = draftExercises
+                } catch {
+                    print("Workout delete error:", error)
+                }
+            }
+            return
+        }
 
         if let existing = findWorkout(on: normalizedDate, context: context) {
             existing.sets = savedSets

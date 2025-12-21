@@ -6,23 +6,18 @@ struct ContentView: View {
         TabView {
             OverviewTabView()
                 .tabItem {
-                    Label("概要", systemImage: "square.grid.2x2")
+                    Label("サマリー", systemImage: "chart.bar.fill")
                 }
 
 
             LogView()
                 .tabItem {
-                    Label("ログ", systemImage: "square.and.pencil")
+                    Label("メモ", systemImage: "calendar.badge.plus")
                 }
             
             ExerciseTabView()
                 .tabItem {
                     Label("種目", systemImage: "list.bullet")
-                }
-            
-            HistoryView()
-                .tabItem {
-                    Label("履歴", systemImage: "clock.arrow.circlepath")
                 }
         }
     }
