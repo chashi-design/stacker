@@ -50,4 +50,3 @@ struct ExerciseListView: View {
         .environmentObject(ExerciseFavoritesStore())
     }
 }
-

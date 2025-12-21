@@ -38,6 +38,7 @@ struct OverviewExerciseDetailView: View {
                         }
                     }
                     .pickerStyle(.segmented)
+                    .segmentedHaptic(trigger: chartPeriod)
                     .padding(.horizontal, 4)
 
                     ExerciseVolumeChart(

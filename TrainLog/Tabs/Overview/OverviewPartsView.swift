@@ -114,6 +114,7 @@ struct OverviewPartsView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .segmentedHaptic(trigger: chartPeriod)
 
                 ExerciseVolumeChart(
                     data: chartData,
@@ -172,6 +173,7 @@ struct OverviewPartsView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .segmentedHaptic(trigger: filter)
                 ForEach(filteredExercises, id: \.exercise.id) { item in
                     NavigationLink {
                         OverviewExerciseDetailView(

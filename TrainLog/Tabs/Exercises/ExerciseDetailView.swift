@@ -50,7 +50,7 @@ struct ExerciseDetailView: View {
         .navigationTitle(exercise.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            Button {
+            HapticButton {
                 favoritesStore.toggle(id: exercise.id)
             } label: {
                 Label(isFavorite ? "お気に入り解除" : "お気に入り", systemImage: isFavorite ? "star.fill" : "star")

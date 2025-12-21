@@ -12,6 +12,7 @@
 - UI: **SwiftUI**（UIKit を新規作成することは禁止）
 - 永続化: **SwiftData**
 - 構造: **MVVM 準拠**
+- iOS 17 以上前提のため、SwiftUIの `sensoryFeedback` など iOS 17 API を利用してよい
   - View = 表示・入力
   - ViewModel = ビジネスロジック / 状態管理
   - Model = SwiftData データモデル
@@ -36,6 +37,13 @@
 - コメント: 日本語で OK
 - SwiftUI ファイルは `#Preview` をできるだけ用意
 - 1 ファイルが 300 行超えたら分割を検討
+- segmented control は必ず触覚FBを付与し、共通の `segmentedHaptic` を利用する
+
+## ファイル分割の粒度
+- 画面単位でファイル分割する（例: 1画面1ファイル）。
+- サブ画面/詳細画面は別ファイルに切り出す（例: 週ごとの一覧/詳細など）。
+- 共通部品・小さなViewは `Components/` か同一ディレクトリ内に `*View.swift` として切り出す。
+- 1ファイル内に複数画面が混在した場合は分割を優先する。
 
 ---
 

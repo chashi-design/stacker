@@ -1,3 +1,4 @@
+import Combine
 import SwiftData
 import SwiftUI
 
@@ -55,8 +56,10 @@ struct LogView: View {
             .onChange(of: viewModel.selectedDate) { _, _ in
                 viewModel.syncDraftsForSelectedDate(context: context)
             }
-            .onReceive(viewModel.$draftExercises) { _ in
-                viewModel.saveWorkout(context: context)
+            .onReceive(viewModel.$draftRevision.dropFirst()) { _ in
+                if !viewModel.isSyncingDrafts {
+                    viewModel.saveWorkout(context: context)
+                }
             }
             .onChange(of: editMode) { oldValue, newValue in
                 if !newValue.isEditing {
@@ -67,22 +70,24 @@ struct LogView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     if editMode.isEditing {
-                        Button {
+                        HapticButton {
                             isShowingDeleteAlert = true
                         } label: {
                             Image(systemName: "trash")
                         }
                         .disabled(selectedEntriesForDeletion.isEmpty)
                     } else {
-                        Button("今日") {
+                        HapticButton {
                             viewModel.selectedDate = LogDateHelper.normalized(Date())
+                        } label: {
+                            Text("今日")
                         }
                     }
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if !editMode.isEditing {
-                        Button {
+                        HapticButton {
                             preparePickerSelection()
                             isShowingExercisePicker = true
                         } label: {

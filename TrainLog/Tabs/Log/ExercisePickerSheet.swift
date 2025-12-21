@@ -1,6 +1,5 @@
 import SwiftData
 import SwiftUI
-import UIKit
 
 struct ExercisePickerSheet: View {
     let exercises: [ExerciseCatalog]
@@ -8,10 +7,12 @@ struct ExercisePickerSheet: View {
     var onCancel: () -> Void
     var onComplete: () -> Void
     @EnvironmentObject private var favoritesStore: ExerciseFavoritesStore
+    @FocusState private var isSearchFocused: Bool
     @State private var selectedGroup: String?
     @State private var searchText: String = ""
 
     private let muscleGroupOrder = ["chest", "shoulders", "arms", "back", "legs", "abs"]
+    private let searchGroupOrder = ["chest", "shoulders", "arms", "back", "legs", "abs"]
 
     var body: some View {
         NavigationStack {
@@ -23,10 +24,10 @@ struct ExercisePickerSheet: View {
                 }
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("キャンセル") { onCancel() }
+                        HapticButton(action: onCancel) { Text("キャンセル") }
                     }
                     ToolbarItem(placement: .confirmationAction) {
-                        Button {
+                        HapticButton {
                             onComplete()
                         } label: {
                             Label {
@@ -41,9 +42,10 @@ struct ExercisePickerSheet: View {
                     }
                 }
                 .searchable(text: $searchText, prompt: "種目名で検索")
+                .searchFocused($isSearchFocused)
                 .modifier(SearchToolbarVisibility())
                 .safeAreaInset(edge: .top) {
-                    if !muscleGroups.isEmpty {
+                    if !isSearchFocused, !muscleGroups.isEmpty {
                         VStack(spacing: 0) {
                             Picker("部位", selection: $selectedGroup) {
                                 ForEach(muscleGroups, id: \.self) { group in
@@ -51,6 +53,7 @@ struct ExercisePickerSheet: View {
                                 }
                             }
                             .pickerStyle(.segmented)
+                            .segmentedHaptic(trigger: selectedGroup)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
                         }
@@ -66,20 +69,41 @@ struct ExercisePickerSheet: View {
     @ViewBuilder
     private var listView: some View {
         List {
-            if !filteredFavorites.isEmpty {
-                let favoriteLabel = selectedGroup.map { "\(MuscleGroupLabel.label(for: $0))のお気に入り" } ?? "お気に入り"
-                Section(favoriteLabel) {
-                    ForEach(filteredFavorites, id: \.id) { item in
-                        exerciseRow(for: item)
+            if isSearchFocused {
+                if !searchFavorites.isEmpty {
+                    Section("お気に入り") {
+                        ForEach(searchFavorites, id: \.id) { item in
+                            exerciseRow(for: item)
+                        }
                     }
                 }
-            }
 
-            if !filteredNonFavorites.isEmpty {
-                let groupLabel = selectedGroup.map { "\(MuscleGroupLabel.label(for: $0))の種目" } ?? "種目"
-                Section(groupLabel) {
-                    ForEach(filteredNonFavorites, id: \.id) { item in
-                        exerciseRow(for: item)
+                ForEach(searchGroupOrder, id: \.self) { group in
+                    let items = searchNonFavoriteExercises(for: group)
+                    if !items.isEmpty {
+                        Section(searchSectionTitle(for: group)) {
+                            ForEach(items, id: \.id) { item in
+                                exerciseRow(for: item)
+                            }
+                        }
+                    }
+                }
+            } else {
+                if !filteredFavorites.isEmpty {
+                    let favoriteLabel = selectedGroup.map { "\(MuscleGroupLabel.label(for: $0))のお気に入り" } ?? "お気に入り"
+                    Section(favoriteLabel) {
+                        ForEach(filteredFavorites, id: \.id) { item in
+                            exerciseRow(for: item)
+                        }
+                    }
+                }
+
+                if !filteredNonFavorites.isEmpty {
+                    let groupLabel = selectedGroup.map { "\(MuscleGroupLabel.label(for: $0))の種目" } ?? "種目"
+                    Section(groupLabel) {
+                        ForEach(filteredNonFavorites, id: \.id) { item in
+                            exerciseRow(for: item)
+                        }
                     }
                 }
             }
@@ -133,6 +157,42 @@ struct ExercisePickerSheet: View {
         exercises.filter { $0.muscleGroup == group }
     }
 
+    private var searchSourceExercises: [ExerciseCatalog] {
+        let keyword = normalizedForSearch(searchText)
+        guard !keyword.isEmpty else { return exercises }
+        return exercises.filter { item in
+            let name = normalizedForSearch(item.name)
+            let nameEn = normalizedForSearch(item.nameEn)
+            return name.contains(keyword) || nameEn.contains(keyword)
+        }
+    }
+
+    private var searchFavorites: [ExerciseCatalog] {
+        searchSourceExercises.filter { favoritesStore.favoriteIDs.contains($0.id) }
+    }
+
+    private func searchNonFavoriteExercises(for group: String) -> [ExerciseCatalog] {
+        searchSourceExercises
+            .filter { $0.muscleGroup == group }
+            .filter { !favoritesStore.favoriteIDs.contains($0.id) }
+    }
+
+    private func nonFavoriteExercises(for group: String) -> [ExerciseCatalog] {
+        exercises(for: group).filter { !favoritesStore.favoriteIDs.contains($0.id) }
+    }
+
+    private func searchSectionTitle(for group: String) -> String {
+        switch group {
+        case "chest": return "胸"
+        case "shoulders": return "肩"
+        case "arms": return "腕"
+        case "back": return "背中"
+        case "legs": return "脚"
+        case "abs": return "体幹"
+        default: return group
+        }
+    }
+
     @ViewBuilder
     private func exerciseRow(for item: ExerciseCatalog) -> some View {
         let isSelected = selections.contains(item.id)
@@ -170,5 +230,4 @@ struct ExercisePickerSheet: View {
         let hiragana = trimmed.applyingTransform(.hiraganaToKatakana, reverse: true) ?? trimmed
         return hiragana.applyingTransform(.fullwidthToHalfwidth, reverse: false) ?? hiragana
     }
-
 }
