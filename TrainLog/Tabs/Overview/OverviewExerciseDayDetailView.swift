@@ -26,12 +26,13 @@ struct OverviewExerciseDayDetailView: View {
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(Array(sets.enumerated()), id: \.element.id) { index, set in
-                    HStack {
+                    HStack(spacing: 32) {
                         Text("\(index + 1)セット")
                         Spacer()
                         Text("\(Int(set.weight))kg")
-                        Spacer()
+                            .fontWeight(.semibold)
                         Text("\(set.reps)回")
+                            .fontWeight(.semibold)
                     }
                 }
             }

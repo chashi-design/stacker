@@ -110,7 +110,7 @@ struct OverviewExerciseDetailView: View {
     private func dayLabel(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = locale
-        formatter.dateFormat = "M月d日"
+        formatter.dateFormat = "yyyy年M月d日"
         return formatter.string(from: date)
     }
 

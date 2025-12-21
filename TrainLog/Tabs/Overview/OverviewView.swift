@@ -30,7 +30,7 @@ struct OverviewTabView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 12)
             }
-            .navigationTitle("概要")
+            .navigationTitle("アクティビティ")
             .navigationBarTitleDisplayMode(.large)
             .background(Color(.systemGroupedBackground))
             .task {
@@ -123,7 +123,7 @@ struct OverviewMuscleCard: View {
                     .font(.headline)
                     .foregroundStyle(titleColor)
                 Text(monthLabel)
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Text(VolumeFormatter.string(from: volume, locale: locale))
                     .font(.title3.weight(.semibold))

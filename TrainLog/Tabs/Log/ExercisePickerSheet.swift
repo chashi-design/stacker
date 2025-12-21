@@ -41,25 +41,13 @@ struct ExercisePickerSheet: View {
                         .disabled(selections.isEmpty)
                     }
                 }
-                .searchable(text: $searchText, prompt: "種目名で検索")
+                .searchable(
+                    text: $searchText,
+                    placement: .navigationBarDrawer(displayMode: .always),
+                    prompt: "種目名で検索"
+                )
                 .searchFocused($isSearchFocused)
                 .modifier(SearchToolbarVisibility())
-                .safeAreaInset(edge: .top) {
-                    if !isSearchFocused, !muscleGroups.isEmpty {
-                        VStack(spacing: 0) {
-                            Picker("部位", selection: $selectedGroup) {
-                                ForEach(muscleGroups, id: \.self) { group in
-                                    Text(MuscleGroupLabel.label(for: group)).tag(String?.some(group))
-                                }
-                            }
-                            .pickerStyle(.segmented)
-                            .segmentedHaptic(trigger: selectedGroup)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                        }
-                        .background(.ultraThinMaterial)
-                    }
-                }
         }
         .onAppear {
             selectedGroup = muscleGroups.first
@@ -69,6 +57,22 @@ struct ExercisePickerSheet: View {
     @ViewBuilder
     private var listView: some View {
         List {
+            if !isSearchFocused, !muscleGroups.isEmpty {
+                VStack(spacing: 0) {
+                    Picker("部位", selection: $selectedGroup) {
+                        ForEach(muscleGroups, id: \.self) { group in
+                            Text(MuscleGroupLabel.label(for: group)).tag(String?.some(group))
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .segmentedHaptic(trigger: selectedGroup)
+                    .padding(.horizontal, 0)
+                    .padding(.vertical, 0)
+                }
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
+                .listRowSeparator(.hidden)
+            }
             if isSearchFocused {
                 if !searchFavorites.isEmpty {
                     Section("お気に入り") {
@@ -109,6 +113,7 @@ struct ExercisePickerSheet: View {
             }
         }
         .listRowSeparator(.hidden)
+        .contentMargins(.top, 0, for: .scrollContent)
         .scrollContentBackground(.visible)
         .applyIfAvailableiOS26 { view in
             view.scrollEdgeEffectStyle(.soft, for: .all)

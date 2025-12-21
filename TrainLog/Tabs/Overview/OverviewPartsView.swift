@@ -186,7 +186,7 @@ struct OverviewPartsView: View {
                                 Text(item.exercise.name)
                                     .font(.headline)
                                 Text("累計")
-                                    .font(.caption)
+                                    .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                 Text(VolumeFormatter.string(from: item.volume, locale: locale))
                                     .font(.subheadline.weight(.semibold))
@@ -219,7 +219,7 @@ struct OverviewPartsView: View {
         let start = calendar.startOfWeek(for: date) ?? date
         let formatter = DateFormatter()
         formatter.locale = locale
-        formatter.dateFormat = "M/d"
+        formatter.dateFormat = "yyyy年MM月dd日"
         return "\(formatter.string(from: start))週"
     }
 
@@ -231,7 +231,9 @@ struct OverviewPartsView: View {
             formatter.dateFormat = "M/d"
             return formatter.string(from: date)
         case .week:
-            return weekRangeLabel(for: date)
+            let start = calendar.startOfWeek(for: date) ?? date
+            formatter.dateFormat = "M/d"
+            return "\(formatter.string(from: start))週"
         case .month:
             formatter.dateFormat = "M月"
             return formatter.string(from: date)

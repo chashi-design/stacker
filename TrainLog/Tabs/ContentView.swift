@@ -10,7 +10,7 @@ struct ContentView: View {
             OverviewTabView()
                 .tag(Tab.summary)
                 .tabItem {
-                    Label("サマリー", systemImage: "chart.bar.fill")
+                    Label("アクティビティ", systemImage: "chart.bar.fill")
                 }
 
             LogView()

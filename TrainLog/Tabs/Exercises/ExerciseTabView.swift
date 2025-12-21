@@ -49,7 +49,7 @@ struct ExerciseTabView: View {
                                 .foregroundStyle(favoriteExercises.isEmpty ? .secondary : .primary)
                             Spacer()
                             Text("\(favoriteExercises.count)種目")
-                                .font(.footnote)
+                                .font(.body)
                                 .foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 4)
@@ -71,8 +71,8 @@ struct ExerciseTabView: View {
                                 Text(category.title)
                                 Spacer()
                                 Text("\(category.exercises.count)種目")
+                                    .font(.body)
                                     .foregroundStyle(.secondary)
-                                    .font(.footnote)
                             }
                             .padding(.vertical, 4)
                         }
@@ -119,9 +119,6 @@ struct ExerciseRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(exercise.name)
                     .font(.headline)
-                Text(exercise.nameEn)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
             Spacer()
             if isFavorite {

@@ -24,37 +24,46 @@ struct OverviewPartsWeekDetailView: View {
 
     var body: some View {
         List {
-            Section(weekRangeLabel(for: normalizedWeekStart)) {
+            Section {
                 ForEach(dailySummaries) { summary in
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
+                    VStack(alignment: .leading, spacing: 20) {
+                        VStack(alignment: .leading) {
                             Text(dayLabel(for: summary.date))
-                            Spacer()
-                            Text(VolumeFormatter.string(from: summary.totalVolume, locale: locale))
-                                .font(.subheadline.weight(.semibold))
-                            if summary.totalSets > 0 {
-                                Text("\(summary.totalSets)セット")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
+                                .font(.headline)
+                            HStack {
+                                if summary.totalSets > 0 {
+                                    Text("\(summary.totalSets)セット")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+                                if summary.totalVolume > 0 {
+                                    Text("(\(VolumeFormatter.string(from: summary.totalVolume, locale: locale)))")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
                         }
                         if summary.exercises.isEmpty {
                             Text("記録なし")
-                                .font(.footnote)
+                                .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         } else {
                             ForEach(summary.exercises) { exercise in
-                                HStack {
+                                VStack(alignment: .leading, spacing: 8) {
                                     Text(exercise.name)
-                                    Spacer()
-                                    Text("\(exercise.sets)セット")
-                                        .font(.footnote)
+                                        .font(.subheadline.weight(.semibold))
+                                    ForEach(Array(exercise.sets.enumerated()), id: \.element.id) { index, set in
+                                        HStack(spacing: 32) {
+                                            Text("\(index + 1)セット")
+                                            Spacer()
+                                            if set.weight > 0 {
+                                                Text("\(Int(set.weight))kg")
+                                            }
+                                            Text("\(set.reps)回")
+                                        }
+                                        .font(.subheadline)
                                         .foregroundStyle(.secondary)
-                                    Text("\(exercise.totalReps)回")
-                                        .font(.footnote)
-                                        .foregroundStyle(.secondary)
-                                    Text(VolumeFormatter.string(from: exercise.volume, locale: locale))
-                                        .font(.footnote.weight(.semibold))
+                                    }
                                 }
                             }
                         }
@@ -71,7 +80,8 @@ struct OverviewPartsWeekDetailView: View {
         let start = calendar.startOfDay(for: date)
         let end = calendar.date(byAdding: .day, value: 1, to: start) ?? start
 
-        var exercisesSummary: [String: (sets: Int, reps: Int, volume: Double)] = [:]
+        var exercisesSummary: [String: [ExerciseSet]] = [:]
+        var totals = (sets: 0, reps: 0, volume: 0.0)
 
         for workout in workouts where workout.date >= start && workout.date < end {
             for set in workout.sets {
@@ -81,25 +91,20 @@ struct OverviewPartsWeekDetailView: View {
                 } else {
                     guard group == "other" else { continue }
                 }
-                var info = exercisesSummary[set.exerciseName] ?? (sets: 0, reps: 0, volume: 0)
-                info.sets += 1
-                info.reps += set.reps
-                info.volume += set.volume
-                exercisesSummary[set.exerciseName] = info
+                exercisesSummary[set.exerciseName, default: []].append(set)
+                totals.sets += 1
+                totals.reps += set.reps
+                totals.volume += set.volume
             }
         }
 
         let exerciseBreakdowns = exercisesSummary
             .map { key, value in
-                ExerciseBreakdown(name: key, sets: value.sets, totalReps: value.reps, volume: value.volume)
+                let orderedSets = value.sorted { $0.createdAt < $1.createdAt }
+                let totalVolume = orderedSets.reduce(0.0) { $0 + $1.volume }
+                return ExerciseBreakdown(name: key, sets: orderedSets, totalVolume: totalVolume)
             }
-            .sorted { $0.volume > $1.volume }
-
-        let totals = exercisesSummary.values.reduce(into: (sets: 0, reps: 0, volume: 0.0)) { acc, value in
-            acc.sets += value.sets
-            acc.reps += value.reps
-            acc.volume += value.volume
-        }
+            .sorted { $0.totalVolume > $1.totalVolume }
 
         return DaySummary(
             date: start,
@@ -114,14 +119,14 @@ struct OverviewPartsWeekDetailView: View {
         let start = calendar.startOfWeek(for: date) ?? date
         let formatter = DateFormatter()
         formatter.locale = locale
-        formatter.dateFormat = "M/d"
+        formatter.dateFormat = "yyyy年MM月dd日"
         return "\(formatter.string(from: start))週"
     }
 
     private func dayLabel(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = locale
-        formatter.dateFormat = "M/d(E)"
+        formatter.dateFormat = "yyyy年MM月dd日 E曜日"
         return formatter.string(from: date)
     }
 
@@ -137,8 +142,7 @@ struct OverviewPartsWeekDetailView: View {
     struct ExerciseBreakdown: Identifiable {
         let id = UUID()
         let name: String
-        let sets: Int
-        let totalReps: Int
-        let volume: Double
+        let sets: [ExerciseSet]
+        let totalVolume: Double
     }
 }

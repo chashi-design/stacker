@@ -165,18 +165,24 @@ struct LogView: View {
                         viewModel.removeDraftExercise(id: entry.id)
                     } content: {
                         if editMode.isEditing {
-                            HStack(spacing: 16) {
+                            HStack(spacing: 20) {
                                 let isSelected = selectedEntriesForDeletion.contains(entry.id)
                                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                                     .foregroundStyle(isSelected ? Color.accentColor : .secondary)
 
-                                VStack(alignment: .leading, spacing: 4) {
+                                VStack(alignment: .leading, spacing: 8) {
                                     Text(entry.exerciseName)
                                         .font(.headline)
                                     let weight = totalWeight(for: entry)
-                                    Text("\(entry.completedSetCount)セット (\(weight)kg)")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                    Group {
+                                        if entry.completedSetCount == 0 {
+                                            Text("\(entry.completedSetCount)セット")
+                                        } else {
+                                            Text("\(entry.completedSetCount)セット (\(weight)kg)")
+                                        }
+                                    }
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
                                 }
                                 Spacer()
                             }
@@ -195,9 +201,15 @@ struct LogView: View {
                                         Text(entry.exerciseName)
                                             .font(.headline)
                                         let weight = totalWeight(for: entry)
-                                        Text("\(entry.completedSetCount)セット (\(weight)kg)")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                        Group {
+                                            if entry.completedSetCount == 0 {
+                                                Text("\(entry.completedSetCount)セット")
+                                            } else {
+                                                Text("\(entry.completedSetCount)セット (\(weight)kg)")
+                                            }
+                                        }
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
                                     }
                                     Spacer()
                                 }
