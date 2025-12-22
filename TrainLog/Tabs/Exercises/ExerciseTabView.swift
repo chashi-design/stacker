@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ExerciseTabView: View {
-    @StateObject private var favoritesStore = ExerciseFavoritesStore()
+    @EnvironmentObject private var favoritesStore: ExerciseFavoritesStore
     @State private var exercises: [ExerciseCatalog] = []
     @State private var loadFailed = false
     @State private var navigationFeedbackTrigger = 0
@@ -106,7 +106,6 @@ struct ExerciseTabView: View {
             }
             .sensoryFeedback(.impact(weight: .light), trigger: navigationFeedbackTrigger)
         }
-        .environmentObject(favoritesStore)
     }
 
     private func loadExercises() {
@@ -155,5 +154,6 @@ struct ExerciseRow: View {
 #Preview {
     NavigationStack {
         ExerciseTabView()
+            .environmentObject(ExerciseFavoritesStore())
     }
 }

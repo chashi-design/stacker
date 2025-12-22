@@ -332,6 +332,48 @@ enum OverviewMetrics {
         return result
             .sorted { $0.volume > $1.volume }
     }
+
+    static func exerciseVolumesForCurrentWeek(
+        workouts: [Workout],
+        exercises: [ExerciseCatalog],
+        muscleGroup: String,
+        calendar: Calendar
+    ) -> [ExerciseVolume] {
+        guard let range = calendar.dateInterval(of: .weekOfYear, for: Date()) else { return [] }
+        let exerciseList = exercises.filter { $0.muscleGroup == muscleGroup }
+        let names = Set(exerciseList.map { $0.name })
+        var buckets: [String: Double] = [:]
+        var legacyNames: Set<String> = []
+
+        for workout in workouts where workout.date >= range.start && workout.date < range.end {
+            let relevantSets: [ExerciseSet] = workout.sets.filter { set in
+                if muscleGroup == "other" {
+                    return lookupMuscleGroup(for: set.exerciseName, exercises: exercises) == "other"
+                } else {
+                    return names.contains(set.exerciseName)
+                }
+            }
+            for set in relevantSets {
+                buckets[set.exerciseName, default: 0] += set.volume
+                if !names.contains(set.exerciseName) {
+                    legacyNames.insert(set.exerciseName)
+                }
+            }
+        }
+
+        var result: [ExerciseVolume] = exerciseList
+            .map { ExerciseVolume(exercise: $0, volume: buckets[$0.name, default: 0]) }
+
+        if muscleGroup == "other" {
+            let legacyExercises = legacyNames.map { name in
+                ExerciseCatalog(id: name, name: name, nameEn: "", muscleGroup: "other", aliases: [], equipment: "", pattern: "")
+            }
+            result += legacyExercises.map { ExerciseVolume(exercise: $0, volume: buckets[$0.name, default: 0]) }
+        }
+
+        return result
+            .sorted { $0.volume > $1.volume }
+    }
     
     static func dailyMuscleGroupVolumes(
         muscleGroup: String,
@@ -462,6 +504,27 @@ enum OverviewMetrics {
                 }
                 buckets[weekStart, default: 0] += set.volume
             }
+        }
+
+        return buckets
+            .map { VolumePoint(date: $0.key, volume: $0.value) }
+            .sorted { $0.date > $1.date }
+    }
+
+    static func weeklyExerciseVolumesAll(
+        for exerciseName: String,
+        workouts: [Workout],
+        calendar: Calendar
+    ) -> [VolumePoint] {
+        var buckets: [Date: Double] = [:]
+
+        for workout in workouts {
+            guard let weekStart = calendar.startOfWeek(for: workout.date) else { continue }
+            let volume = workout.sets
+                .filter { $0.exerciseName == exerciseName }
+                .reduce(0.0) { $0 + $1.volume }
+            guard volume > 0 else { continue }
+            buckets[weekStart, default: 0] += volume
         }
 
         return buckets

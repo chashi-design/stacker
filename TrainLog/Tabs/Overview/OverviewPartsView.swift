@@ -5,6 +5,7 @@ struct OverviewPartsView: View {
     let displayName: String
     let exercises: [ExerciseCatalog]
     let workouts: [Workout]
+    @EnvironmentObject private var favoritesStore: ExerciseFavoritesStore
 
     @State private var chartPeriod: PartsChartPeriod = .day
     @State private var filter: PartsFilter = .all
@@ -17,7 +18,7 @@ struct OverviewPartsView: View {
     private let locale = Locale(identifier: "ja_JP")
 
     private var exerciseVolumes: [ExerciseVolume] {
-        OverviewMetrics.exerciseVolumesForCurrentMonth(
+        OverviewMetrics.exerciseVolumesForCurrentWeek(
             workouts: workouts,
             exercises: exercises,
             muscleGroup: muscleGroup,
@@ -193,7 +194,7 @@ struct OverviewPartsView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(item.exercise.name)
                                     .font(.headline)
-                                Text("累計")
+                                Text(currentWeekLabel)
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                 Text(VolumeFormatter.string(from: item.volume, locale: locale))
@@ -237,8 +238,8 @@ struct OverviewPartsView: View {
         switch filter {
         case .all:
             return exerciseVolumes
-        case .completed:
-            return exerciseVolumes.filter { $0.volume > 0 }
+        case .favorites:
+            return exerciseVolumes.filter { favoritesStore.favoriteIDs.contains($0.exercise.id) }
         }
     }
 
@@ -247,6 +248,14 @@ struct OverviewPartsView: View {
         let formatter = DateFormatter()
         formatter.locale = locale
         formatter.dateFormat = "yyyy年MM月dd日"
+        return "\(formatter.string(from: start))週"
+    }
+
+    private var currentWeekLabel: String {
+        let start = calendar.startOfWeek(for: Date()) ?? Date()
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.dateFormat = "M/d"
         return "\(formatter.string(from: start))週"
     }
 
@@ -284,12 +293,12 @@ enum PartsChartPeriod: CaseIterable {
 
 enum PartsFilter: CaseIterable {
     case all
-    case completed
+    case favorites
 
     var title: String {
         switch self {
         case .all: return "すべて"
-        case .completed: return "実施済み"
+        case .favorites: return "お気に入り"
         }
     }
 }

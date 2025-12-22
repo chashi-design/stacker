@@ -8,7 +8,7 @@ struct OverviewExerciseDetailView: View {
 
     @State private var chartPeriod: ExerciseChartPeriod = .day
     @State private var navigationFeedbackTrigger = 0
-    @State private var selectedDay: Date?
+    @State private var selectedWeekStart: Date?
     private let calendar = Calendar.appCurrent
     private let locale = Locale(identifier: "ja_JP")
 
@@ -27,6 +27,22 @@ struct OverviewExerciseDetailView: View {
     private var hasAnyHistory: Bool {
         workouts.contains { workout in
             workout.sets.contains { $0.exerciseName == exercise.name }
+        }
+    }
+
+    private var weeklyListData: [ExerciseWeekListItem] {
+        OverviewMetrics.weeklyExerciseVolumesAll(
+            for: exercise.name,
+            workouts: workouts,
+            calendar: calendar
+        )
+        .map { point in
+            let start = calendar.startOfWeek(for: point.date) ?? point.date
+            return ExerciseWeekListItem(
+                start: start,
+                label: weekRangeLabel(for: start),
+                volume: point.volume
+            )
         }
     }
 
@@ -53,38 +69,36 @@ struct OverviewExerciseDetailView: View {
                 }
             }
 
-            ForEach(sectionedDailyVolumes) { section in
-                Section(section.monthLabel) {
-                    ForEach(section.items) { item in
-                        NavigationLink(tag: item.date, selection: $selectedDay) {
-                            OverviewExerciseDayDetailView(
-                                exerciseName: exercise.name,
-                                date: item.date,
-                                workouts: workouts
-                            )
-                        } label: {
-                            HStack {
-                                Text(dayLabel(for: item.date))
-                                Spacer()
-                                Text(VolumeFormatter.string(from: item.volume, locale: locale))
-                                    .font(.headline)
-                            }
-                            .padding(.vertical, 4)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
+            Section("週間記録") {
+                ForEach(weeklyListData) { item in
+                    NavigationLink(tag: item.start, selection: $selectedWeekStart) {
+                        OverviewExerciseWeekDetailView(
+                            weekStart: item.start,
+                            exerciseName: exercise.name,
+                            workouts: workouts
+                        )
+                    } label: {
+                        HStack {
+                            Text(item.label)
+                            Spacer()
+                            Text(VolumeFormatter.string(from: item.volume, locale: locale))
+                                .font(.subheadline.weight(.semibold))
                         }
+                        .padding(.vertical, 4)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
                     }
                 }
-            }
-            if sectionedDailyVolumes.isEmpty {
-                Text("期間内の記録がありません")
-                    .foregroundStyle(.secondary)
+                if weeklyListData.isEmpty {
+                    Text("期間内の記録がありません")
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .listStyle(.insetGrouped)
         .navigationTitle(exercise.name)
         .navigationBarTitleDisplayMode(.large)
-        .onChange(of: selectedDay) { _, newValue in
+        .onChange(of: selectedWeekStart) { _, newValue in
             if newValue != nil {
                 navigationFeedbackTrigger += 1
             }
@@ -92,36 +106,12 @@ struct OverviewExerciseDetailView: View {
         .sensoryFeedback(.impact(weight: .light), trigger: navigationFeedbackTrigger)
     }
 
-    private var sectionedDailyVolumes: [DailyVolumeSection] {
-        let days = OverviewMetrics.dailyVolumesAll(
-            for: exercise.name,
-            workouts: workouts,
-            calendar: calendar
-        )
+    private func weekRangeLabel(for date: Date) -> String {
+        let start = calendar.startOfWeek(for: date) ?? date
         let formatter = DateFormatter()
         formatter.locale = locale
-        formatter.dateFormat = "yyyy年M月"
-
-        let grouped = Dictionary(grouping: days) { day in
-            formatter.string(from: day.date)
-        }
-
-        return grouped
-            .map { key, values in
-                DailyVolumeSection(
-                    id: key,
-                    monthLabel: key,
-                    items: values.sorted { $0.date > $1.date }
-                )
-            }
-            .sorted { $0.items.first?.date ?? Date.distantFuture > $1.items.first?.date ?? Date.distantFuture }
-    }
-
-    private func dayLabel(for date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = locale
-        formatter.dateFormat = "yyyy年M月d日"
-        return formatter.string(from: date)
+        formatter.dateFormat = "yyyy年MM月dd日"
+        return "\(formatter.string(from: start))週"
     }
 
     private func axisLabel(for date: Date, period: ExerciseChartPeriod) -> String {
@@ -137,4 +127,11 @@ struct OverviewExerciseDetailView: View {
         }
         return formatter.string(from: date)
     }
+}
+
+struct ExerciseWeekListItem: Identifiable, Hashable {
+    var id: Date { start }
+    let start: Date
+    let label: String
+    let volume: Double
 }

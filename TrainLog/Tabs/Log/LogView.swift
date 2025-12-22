@@ -6,7 +6,7 @@ import SwiftUI
 struct LogView: View {
     @Environment(\.modelContext) private var context
     @StateObject private var viewModel = LogViewModel()
-    @StateObject private var favoritesStore = ExerciseFavoritesStore()
+    @EnvironmentObject private var favoritesStore: ExerciseFavoritesStore
     @Query(sort: \Workout.date, order: .reverse) private var workoutsQuery: [Workout]
     private var workouts: [Workout] { workoutsQuery }
     @State private var isShowingExercisePicker = false
@@ -261,6 +261,7 @@ struct LogView: View {
 
 #Preview {
     LogView()
+        .environmentObject(ExerciseFavoritesStore())
 }
 
 private extension EditMode {

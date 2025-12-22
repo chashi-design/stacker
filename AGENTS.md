@@ -97,6 +97,11 @@
 - `if/else` の分岐に `onChange`/`sensoryFeedback` を付ける場合は `Group` で包み、同一Viewに修飾子を適用する
 - 触覚FBの強度は原則 `.light` を使う（例外が必要なら事前に相談）
 
+## Shared State / Weekly UI Rules
+- お気に入り状態はタブ共通ストアで管理し、TabView配下でenvironmentObject注入する
+- 週リストのラベルはyyyy年MM月dd日週、週合計表示はVolumeFormatterで統一
+- 週間詳細は週内7日を固定表示し、未記録日は“記録なし”を出す
+
 ---
 
 ## When to Ask the User

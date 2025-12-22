@@ -4,6 +4,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var selectedTab: Tab = .summary
     @State private var tabHapticTrigger = 0
+    @StateObject private var favoritesStore = ExerciseFavoritesStore()
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -29,6 +30,7 @@ struct ContentView: View {
             tabHapticTrigger += 1
         }
         .sensoryFeedback(.impact(weight: .light), trigger: tabHapticTrigger)
+        .environmentObject(favoritesStore)
     }
 }
 
