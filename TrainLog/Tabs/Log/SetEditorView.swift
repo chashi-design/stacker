@@ -6,6 +6,15 @@ struct SetEditorView: View {
     let exerciseID: UUID
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
+    @State private var fieldHapticTrigger = 0
+    @State private var addSetHapticTrigger = 0
+    @State private var deleteSetHapticTrigger = 0
+    @FocusState private var focusedField: Field?
+
+    private enum Field: Hashable {
+        case weight(UUID)
+        case reps(UUID)
+    }
 
     var body: some View {
         if let entry = viewModel.draftEntry(with: exerciseID) {
@@ -25,6 +34,7 @@ struct SetEditorView: View {
                             )
                         )
                         .keyboardType(.numberPad)
+                        .focused($focusedField, equals: .weight(set.id))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 8)
                         .background(Color(.tertiarySystemFill))
@@ -39,6 +49,7 @@ struct SetEditorView: View {
                             )
                         )
                         .keyboardType(.numberPad)
+                        .focused($focusedField, equals: .reps(set.id))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 8)
                         .background(Color(.tertiarySystemFill))
@@ -49,21 +60,31 @@ struct SetEditorView: View {
 
                         Button(role: .destructive) {
                             viewModel.removeSetRow(exerciseID: exerciseID, setID: set.id)
+                            deleteSetHapticTrigger += 1
                         } label: {
                             Image(systemName: "minus.circle.fill")
                                 .foregroundStyle(.red)
                         }
                         .buttonStyle(.plain)
                         .disabled(entry.sets.count <= 1)
+                        .sensoryFeedback(.impact(weight: .light), trigger: deleteSetHapticTrigger)
                     }
                 }
 
                 Button {
                     viewModel.addSetRow(to: exerciseID)
+                    addSetHapticTrigger += 1
                 } label: {
                     Label("セットを追加", systemImage: "plus.circle.fill")
                 }
+                .sensoryFeedback(.impact(weight: .light), trigger: addSetHapticTrigger)
             }
+            .onChange(of: focusedField) { _, newValue in
+                if newValue != nil {
+                    fieldHapticTrigger += 1
+                }
+            }
+            .sensoryFeedback(.impact(weight: .light), trigger: fieldHapticTrigger)
             .navigationTitle(entry.exerciseName)
             .navigationBarTitleDisplayMode(.inline)
         } else {

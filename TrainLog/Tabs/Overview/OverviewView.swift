@@ -65,38 +65,50 @@ struct OverviewMuscleGrid: View {
     let locale: Locale
 
     private let columns = [GridItem(.flexible(), spacing: 12)]
+    @State private var navigationFeedbackTrigger = 0
+    @State private var selectedMuscleGroup: String?
 
     var body: some View {
         let visibleVolumes = volumes.filter { $0.muscleGroup != "other" }
 
-        if visibleVolumes.isEmpty || exercises.isEmpty {
-            Text("種目データがありません")
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 4)
-        } else {
-            LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(visibleVolumes) { item in
-                    NavigationLink {
-                        OverviewPartsView(
-                            muscleGroup: item.muscleGroup,
-                            displayName: item.displayName,
-                            exercises: exercises.filter { $0.muscleGroup == item.muscleGroup },
-                            workouts: workouts
-                        )
-                    } label: {
-                        OverviewMuscleCard(
-                            title: item.displayName,
-                            monthLabel: weekRangeLabel(for: Date()),
-                            volume: item.volume,
-                            locale: locale,
-                            titleColor: MuscleGroupColor.color(for: item.muscleGroup)
-                        )
+        Group {
+            if visibleVolumes.isEmpty || exercises.isEmpty {
+                Text("種目データがありません")
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 4)
+            } else {
+                LazyVGrid(columns: columns, spacing: 12) {
+                    ForEach(visibleVolumes) { item in
+                        NavigationLink(tag: item.muscleGroup, selection: $selectedMuscleGroup) {
+                            OverviewPartsView(
+                                muscleGroup: item.muscleGroup,
+                                displayName: item.displayName,
+                                exercises: exercises.filter { $0.muscleGroup == item.muscleGroup },
+                                workouts: workouts
+                            )
+                        } label: {
+                            OverviewMuscleCard(
+                                title: item.displayName,
+                                monthLabel: weekRangeLabel(for: Date()),
+                                volume: item.volume,
+                                locale: locale,
+                                titleColor: MuscleGroupColor.color(for: item.muscleGroup)
+                            )
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
+        .onChange(of: selectedMuscleGroup) { _, newValue in
+            if newValue != nil {
+                navigationFeedbackTrigger += 1
+            }
+        }
+        .sensoryFeedback(.impact(weight: .light), trigger: navigationFeedbackTrigger)
     }
 
     private func weekRangeLabel(for date: Date) -> String {

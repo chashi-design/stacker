@@ -8,6 +8,11 @@ struct OverviewPartsView: View {
 
     @State private var chartPeriod: PartsChartPeriod = .day
     @State private var filter: PartsFilter = .all
+    @State private var navigationFeedbackTrigger = 0
+    @State private var exerciseFeedbackTrigger = 0
+    @State private var selectedWeekStart: Date?
+    @State private var selectedExerciseID: String?
+    @State private var selectedWeeklyList: Bool?
     private let calendar = Calendar.appCurrent
     private let locale = Locale(identifier: "ja_JP")
 
@@ -128,7 +133,7 @@ struct OverviewPartsView: View {
             if !recentWeeklyListData.isEmpty {
                 Section {
                     ForEach(recentWeeklyListData) { item in
-                        NavigationLink {
+                        NavigationLink(tag: item.start, selection: $selectedWeekStart) {
                             OverviewPartsWeekDetailView(
                                 weekStart: item.start,
                                 muscleGroup: item.muscleGroup,
@@ -144,13 +149,15 @@ struct OverviewPartsView: View {
                                     .font(.subheadline.weight(.semibold))
                             }
                             .padding(.vertical, 4)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
                         }
                     }
                 } header: {
                     HStack {
                         Text("週間記録")
                         Spacer()
-                        NavigationLink {
+                        NavigationLink(tag: true, selection: $selectedWeeklyList) {
                             OverviewPartsWeeklyListView(
                                 title: "週間記録",
                                 items: weeklyListData,
@@ -162,6 +169,7 @@ struct OverviewPartsView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(Color.accentColor)
                         }
+                        .contentShape(Rectangle())
                     }
                 }
             }
@@ -175,7 +183,7 @@ struct OverviewPartsView: View {
                 .pickerStyle(.segmented)
                 .segmentedHaptic(trigger: filter)
                 ForEach(filteredExercises, id: \.exercise.id) { item in
-                    NavigationLink {
+                    NavigationLink(tag: item.exercise.id, selection: $selectedExerciseID) {
                         OverviewExerciseDetailView(
                             exercise: item.exercise,
                             workouts: workouts
@@ -193,6 +201,8 @@ struct OverviewPartsView: View {
                             }
                         }
                         .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
                     }
                 }
                 if filteredExercises.isEmpty {
@@ -204,6 +214,23 @@ struct OverviewPartsView: View {
         .navigationTitle(displayName)
         .navigationBarTitleDisplayMode(.large)
         .listSectionSpacing(10)
+        .onChange(of: selectedWeekStart) { _, newValue in
+            if newValue != nil {
+                navigationFeedbackTrigger += 1
+            }
+        }
+        .onChange(of: selectedExerciseID) { _, newValue in
+            if newValue != nil {
+                exerciseFeedbackTrigger += 1
+            }
+        }
+        .onChange(of: selectedWeeklyList) { _, newValue in
+            if newValue != nil {
+                navigationFeedbackTrigger += 1
+            }
+        }
+        .sensoryFeedback(.impact(weight: .light), trigger: navigationFeedbackTrigger)
+        .sensoryFeedback(.impact(weight: .light), trigger: exerciseFeedbackTrigger)
     }
 
     private var filteredExercises: [ExerciseVolume] {

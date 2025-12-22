@@ -85,6 +85,20 @@
 
 ---
 
+## Haptic / Feedback Rules
+- リストの行タップは「どこをタップしても遷移＋触覚FB」が必ず発火すること
+- リスト外を含むリンク（NavigationLink など）も、遷移と触覚FBが必ず同期して発火すること
+- NavigationLink には、必要に応じて selection/binding を使い、遷移と触覚を同一イベントで同期させる
+- 行ラベルは全幅タップを保証するために `frame(maxWidth: .infinity, alignment: .leading)` と `contentShape(Rectangle())` を基本とする
+- 「行内のテキストだけ反応」「余白だけ反応」といった分断挙動は許可しない
+- 非遷移の行タップ（詳細開閉など）は別途ルールを定義してから導入する
+- 例外: カレンダーの日付タップは非遷移でも触覚FBを許可する
+- 触覚FBは「選択状態の変化」で発火させ、行ごとに `sensoryFeedback` を付けない（複数発火を防ぐ）
+- `if/else` の分岐に `onChange`/`sensoryFeedback` を付ける場合は `Group` で包み、同一Viewに修飾子を適用する
+- 触覚FBの強度は原則 `.light` を使う（例外が必要なら事前に相談）
+
+---
+
 ## When to Ask the User
 - SwiftData モデルのフィールド追加/削除
 - 画面遷移方法を変える場合（sheet → navigation など）

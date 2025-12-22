@@ -7,6 +7,8 @@ struct OverviewExerciseDetailView: View {
     let workouts: [Workout]
 
     @State private var chartPeriod: ExerciseChartPeriod = .day
+    @State private var navigationFeedbackTrigger = 0
+    @State private var selectedDay: Date?
     private let calendar = Calendar.appCurrent
     private let locale = Locale(identifier: "ja_JP")
 
@@ -54,7 +56,7 @@ struct OverviewExerciseDetailView: View {
             ForEach(sectionedDailyVolumes) { section in
                 Section(section.monthLabel) {
                     ForEach(section.items) { item in
-                        NavigationLink {
+                        NavigationLink(tag: item.date, selection: $selectedDay) {
                             OverviewExerciseDayDetailView(
                                 exerciseName: exercise.name,
                                 date: item.date,
@@ -68,6 +70,8 @@ struct OverviewExerciseDetailView: View {
                                     .font(.headline)
                             }
                             .padding(.vertical, 4)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
                         }
                     }
                 }
@@ -80,6 +84,12 @@ struct OverviewExerciseDetailView: View {
         .listStyle(.insetGrouped)
         .navigationTitle(exercise.name)
         .navigationBarTitleDisplayMode(.large)
+        .onChange(of: selectedDay) { _, newValue in
+            if newValue != nil {
+                navigationFeedbackTrigger += 1
+            }
+        }
+        .sensoryFeedback(.impact(weight: .light), trigger: navigationFeedbackTrigger)
     }
 
     private var sectionedDailyVolumes: [DailyVolumeSection] {

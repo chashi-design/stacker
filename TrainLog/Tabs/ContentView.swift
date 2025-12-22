@@ -1,9 +1,9 @@
 import SwiftUI
-import UIKit
 
 // アプリ全体のタブをまとめるエントリーポイント
 struct ContentView: View {
     @State private var selectedTab: Tab = .summary
+    @State private var tabHapticTrigger = 0
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -26,10 +26,9 @@ struct ContentView: View {
                 }
         }
         .onChange(of: selectedTab) { _, _ in
-            let generator = UIImpactFeedbackGenerator(style: .medium)
-            generator.prepare()
-            generator.impactOccurred()
+            tabHapticTrigger += 1
         }
+        .sensoryFeedback(.impact(weight: .light), trigger: tabHapticTrigger)
     }
 }
 

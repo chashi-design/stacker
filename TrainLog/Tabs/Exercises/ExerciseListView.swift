@@ -9,13 +9,13 @@ struct ExerciseListView: View {
     var body: some View {
         List {
             ForEach(exercises, id: \.id) { exercise in
-                NavigationLink {
-                    ExerciseDetailView(exercise: exercise)
-                } label: {
+                NavigationLink(value: ExerciseRoute.detail(exercise)) {
                     ExerciseRow(
                         exercise: exercise,
                         isFavorite: favoritesStore.isFavorite(exercise.id)
                     )
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
                 }
                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                     Button {
