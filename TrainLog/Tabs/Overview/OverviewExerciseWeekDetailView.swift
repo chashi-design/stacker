@@ -32,7 +32,7 @@ struct OverviewExerciseWeekDetailView: View {
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             } else {
-                                Text("\(summary.sets.count)セット (\(VolumeFormatter.string(from: summary.totalVolume, locale: locale)))")
+                                Text("\(summary.sets.count)セット (\(VolumeFormatter.stringWithFraction(from: summary.totalVolume, locale: locale)))")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
@@ -43,7 +43,7 @@ struct OverviewExerciseWeekDetailView: View {
                                     Text("\(index + 1)セット")
                                     Spacer()
                                     if set.weight > 0 {
-                                        Text("\(Int(set.weight))kg")
+                                        Text(VolumeFormatter.weightString(from: set.weight, locale: locale))
                                     }
                                     Text("\(set.reps)回")
                                 }

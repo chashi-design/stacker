@@ -97,6 +97,11 @@
 - `if/else` の分岐に `onChange`/`sensoryFeedback` を付ける場合は `Group` で包み、同一Viewに修飾子を適用する
 - 触覚FBの強度は原則 `.light` を使う（例外が必要なら事前に相談）
 
+## Navigation / Error Notes
+- `navigationDestination(item:)` を使う場合、`item` は `Hashable` 準拠が必須
+- `onChange(of:)` で Optional を監視する場合、対象型の `Equatable` 準拠が必須
+- これらの準拠追加後も Xcode が警告を保持する場合は、Index の不整合の可能性があるため再起動や Clean Build を検討
+
 ## Shared State / Weekly UI Rules
 - お気に入り状態はタブ共通ストアで管理し、TabView配下でenvironmentObject注入する
 - 週リストのラベルはyyyy年MM月dd日週、週合計表示はVolumeFormatterで統一

@@ -29,7 +29,7 @@ struct OverviewExerciseDayDetailView: View {
                     HStack(spacing: 32) {
                         Text("\(index + 1)セット")
                         Spacer()
-                        Text("\(Int(set.weight))kg")
+                        Text(VolumeFormatter.weightString(from: set.weight, locale: locale))
                             .fontWeight(.semibold)
                         Text("\(set.reps)回")
                             .fontWeight(.semibold)

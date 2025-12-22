@@ -66,7 +66,7 @@ struct OverviewMuscleGrid: View {
 
     private let columns = [GridItem(.flexible(), spacing: 12)]
     @State private var navigationFeedbackTrigger = 0
-    @State private var selectedMuscleGroup: String?
+    @State private var selectedMuscleGroup: MuscleGroupVolume?
 
     var body: some View {
         let visibleVolumes = volumes.filter { $0.muscleGroup != "other" }
@@ -80,13 +80,8 @@ struct OverviewMuscleGrid: View {
             } else {
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(visibleVolumes) { item in
-                        NavigationLink(tag: item.muscleGroup, selection: $selectedMuscleGroup) {
-                            OverviewPartsView(
-                                muscleGroup: item.muscleGroup,
-                                displayName: item.displayName,
-                                exercises: exercises.filter { $0.muscleGroup == item.muscleGroup },
-                                workouts: workouts
-                            )
+                        Button {
+                            selectedMuscleGroup = item
                         } label: {
                             OverviewMuscleCard(
                                 title: item.displayName,
@@ -102,6 +97,14 @@ struct OverviewMuscleGrid: View {
                     }
                 }
             }
+        }
+        .navigationDestination(item: $selectedMuscleGroup) { item in
+            OverviewPartsView(
+                muscleGroup: item.muscleGroup,
+                displayName: item.displayName,
+                exercises: exercises.filter { $0.muscleGroup == item.muscleGroup },
+                workouts: workouts
+            )
         }
         .onChange(of: selectedMuscleGroup) { _, newValue in
             if newValue != nil {
@@ -137,7 +140,7 @@ struct OverviewMuscleCard: View {
                 Text(monthLabel)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                Text(VolumeFormatter.string(from: volume, locale: locale))
+                Text(VolumeFormatter.stringWithFraction(from: volume, locale: locale))
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(.primary)
             }
@@ -199,14 +202,14 @@ struct VolumePoint: Identifiable {
     let volume: Double
 }
 
-struct MuscleGroupVolume: Identifiable {
+struct MuscleGroupVolume: Identifiable, Hashable {
     var id: String { muscleGroup }
     let muscleGroup: String
     let displayName: String
     let volume: Double
 }
 
-struct ExerciseVolume {
+struct ExerciseVolume: Hashable {
     let exercise: ExerciseCatalog
     let volume: Double
 }
@@ -740,6 +743,31 @@ enum VolumeFormatter {
         let number = NSNumber(value: volume)
         let text = formatter.string(from: number) ?? "0"
         return "\(text) kg"
+    }
+
+    static func stringWithFraction(from volume: Double, locale: Locale) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = locale
+        formatter.maximumFractionDigits = 3
+        formatter.minimumFractionDigits = 0
+        let number = NSNumber(value: volume)
+        let text = formatter.string(from: number) ?? "0"
+        return "\(text) kg"
+    }
+
+    static func weightString(from weight: Double, locale: Locale) -> String {
+        if weight.rounded(.towardZero) == weight {
+            return "\(Int(weight))kg"
+        }
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = locale
+        formatter.maximumFractionDigits = 3
+        formatter.minimumFractionDigits = 0
+        let number = NSNumber(value: weight)
+        let text = formatter.string(from: number) ?? String(weight)
+        return "\(text)kg"
     }
 }
 

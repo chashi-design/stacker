@@ -37,7 +37,7 @@ struct OverviewPartsWeekDetailView: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 if summary.totalVolume > 0 {
-                                    Text("(\(VolumeFormatter.string(from: summary.totalVolume, locale: locale)))")
+                                    Text("(\(VolumeFormatter.stringWithFraction(from: summary.totalVolume, locale: locale)))")
                                         .font(.subheadline)
                                         .foregroundStyle(.secondary)
                                 }
@@ -57,7 +57,7 @@ struct OverviewPartsWeekDetailView: View {
                                             Text("\(index + 1)セット")
                                             Spacer()
                                             if set.weight > 0 {
-                                                Text("\(Int(set.weight))kg")
+                                                Text(VolumeFormatter.weightString(from: set.weight, locale: locale))
                                             }
                                             Text("\(set.reps)回")
                                         }

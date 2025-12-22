@@ -191,7 +191,7 @@ struct LogView: View {
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text(entry.exerciseName)
                                         .font(.headline)
-                                    let weight = totalWeight(for: entry)
+                                    let weight = formattedWeight(totalWeight(for: entry))
                                     Group {
                                         if entry.completedSetCount == 0 {
                                             Text("\(entry.completedSetCount)セット")
@@ -216,7 +216,7 @@ struct LogView: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(entry.exerciseName)
                                             .font(.headline)
-                                        let weight = totalWeight(for: entry)
+                                        let weight = formattedWeight(totalWeight(for: entry))
                                         Group {
                                             if entry.completedSetCount == 0 {
                                                 Text("\(entry.completedSetCount)セット")
@@ -250,12 +250,16 @@ struct LogView: View {
         }
     }
 
-    private func totalWeight(for entry: DraftExerciseEntry) -> Int {
+    private func totalWeight(for entry: DraftExerciseEntry) -> Double {
         entry.sets.compactMap { set in
-            guard let weight = Int(set.weightText), let reps = Int(set.repsText) else { return nil }
-            return weight * reps
+            guard let weight = Double(set.weightText), let reps = Int(set.repsText) else { return nil }
+            return weight * Double(reps)
         }
         .reduce(0, +)
+    }
+
+    private func formattedWeight(_ weight: Double) -> String {
+        DraftSetRow.formattedWeightText(weight)
     }
 }
 

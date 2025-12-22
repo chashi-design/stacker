@@ -11,9 +11,12 @@ struct OverviewPartsView: View {
     @State private var filter: PartsFilter = .all
     @State private var navigationFeedbackTrigger = 0
     @State private var exerciseFeedbackTrigger = 0
-    @State private var selectedWeekStart: Date?
-    @State private var selectedExerciseID: String?
-    @State private var selectedWeeklyList: Bool?
+    @State private var selectedWeekItem: WeekListItem?
+    @State private var selectedExerciseItem: ExerciseVolume?
+    @State private var selectedWeeklyListItem: WeeklyListDestination?
+    private struct WeeklyListDestination: Identifiable, Hashable {
+        let id = UUID()
+    }
     private let calendar = Calendar.appCurrent
     private let locale = Locale(identifier: "ja_JP")
 
@@ -134,48 +137,43 @@ struct OverviewPartsView: View {
             if !recentWeeklyListData.isEmpty {
                 Section {
                     ForEach(recentWeeklyListData) { item in
-                        NavigationLink(tag: item.start, selection: $selectedWeekStart) {
-                            OverviewPartsWeekDetailView(
-                                weekStart: item.start,
-                                muscleGroup: item.muscleGroup,
-                                displayName: item.displayName,
-                                workouts: workouts,
-                                exercises: exercises
-                            )
+                        Button {
+                            selectedWeekItem = item
                         } label: {
                             HStack {
                                 Text(item.label)
                                 Spacer()
-                                Text(VolumeFormatter.string(from: item.volume, locale: locale))
+                                Text(VolumeFormatter.stringWithFraction(from: item.volume, locale: locale))
                                     .font(.subheadline.weight(.semibold))
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(.tertiary)
+                                    .imageScale(.small)
+                                    .font(.system(size: 17, weight: .semibold))
                             }
                             .padding(.vertical, 4)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                     }
                 } header: {
                     HStack {
-                        Text("週間記録")
+                        Text("週別記録")
                         Spacer()
-                        NavigationLink(tag: true, selection: $selectedWeeklyList) {
-                            OverviewPartsWeeklyListView(
-                                title: "週間記録",
-                                items: weeklyListData,
-                                workouts: workouts,
-                                exercises: exercises
-                            )
+                        Button {
+                            selectedWeeklyListItem = WeeklyListDestination()
                         } label: {
                             Text("すべて表示")
                                 .font(.subheadline)
                                 .foregroundStyle(Color.accentColor)
+                                .contentShape(Rectangle())
                         }
-                        .contentShape(Rectangle())
+                        .buttonStyle(.plain)
                     }
                 }
             }
 
-            Section("種目") {
+            Section("種目ごとの記録") {
                 Picker("表示", selection: $filter) {
                     ForEach(PartsFilter.allCases, id: \.self) { option in
                         Text(option.title).tag(option)
@@ -184,11 +182,8 @@ struct OverviewPartsView: View {
                 .pickerStyle(.segmented)
                 .segmentedHaptic(trigger: filter)
                 ForEach(filteredExercises, id: \.exercise.id) { item in
-                    NavigationLink(tag: item.exercise.id, selection: $selectedExerciseID) {
-                        OverviewExerciseDetailView(
-                            exercise: item.exercise,
-                            workouts: workouts
-                        )
+                    Button {
+                        selectedExerciseItem = item
                     } label: {
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
@@ -197,14 +192,20 @@ struct OverviewPartsView: View {
                                 Text(currentWeekLabel)
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
-                                Text(VolumeFormatter.string(from: item.volume, locale: locale))
+                                Text(VolumeFormatter.stringWithFraction(from: item.volume, locale: locale))
                                     .font(.subheadline.weight(.semibold))
                             }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.tertiary)
+                                .imageScale(.small)
+                                .font(.system(size: 17, weight: .semibold))
                         }
                         .padding(.vertical, 8)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
                 }
                 if filteredExercises.isEmpty {
                     Text("対象の種目がありません")
@@ -215,17 +216,40 @@ struct OverviewPartsView: View {
         .navigationTitle(displayName)
         .navigationBarTitleDisplayMode(.large)
         .listSectionSpacing(10)
-        .onChange(of: selectedWeekStart) { _, newValue in
+        .navigationDestination(item: $selectedWeekItem) { item in
+            OverviewPartsWeekDetailView(
+                weekStart: item.start,
+                muscleGroup: item.muscleGroup,
+                displayName: item.displayName,
+                workouts: workouts,
+                exercises: exercises
+            )
+        }
+        .navigationDestination(item: $selectedWeeklyListItem) { _ in
+            OverviewPartsWeeklyListView(
+                title: "週間記録",
+                items: weeklyListData,
+                workouts: workouts,
+                exercises: exercises
+            )
+        }
+        .navigationDestination(item: $selectedExerciseItem) { item in
+            OverviewExerciseDetailView(
+                exercise: item.exercise,
+                workouts: workouts
+            )
+        }
+        .onChange(of: selectedWeekItem) { _, newValue in
             if newValue != nil {
                 navigationFeedbackTrigger += 1
             }
         }
-        .onChange(of: selectedExerciseID) { _, newValue in
+        .onChange(of: selectedExerciseItem) { _, newValue in
             if newValue != nil {
                 exerciseFeedbackTrigger += 1
             }
         }
-        .onChange(of: selectedWeeklyList) { _, newValue in
+        .onChange(of: selectedWeeklyListItem) { _, newValue in
             if newValue != nil {
                 navigationFeedbackTrigger += 1
             }

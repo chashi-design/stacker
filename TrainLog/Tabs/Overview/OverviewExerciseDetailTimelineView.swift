@@ -8,7 +8,7 @@ struct OverviewExerciseDetailView: View {
 
     @State private var chartPeriod: ExerciseChartPeriod = .day
     @State private var navigationFeedbackTrigger = 0
-    @State private var selectedWeekStart: Date?
+    @State private var selectedWeekItem: ExerciseWeekListItem?
     private let calendar = Calendar.appCurrent
     private let locale = Locale(identifier: "ja_JP")
 
@@ -69,25 +69,26 @@ struct OverviewExerciseDetailView: View {
                 }
             }
 
-            Section("週間記録") {
+            Section("週別記録") {
                 ForEach(weeklyListData) { item in
-                    NavigationLink(tag: item.start, selection: $selectedWeekStart) {
-                        OverviewExerciseWeekDetailView(
-                            weekStart: item.start,
-                            exerciseName: exercise.name,
-                            workouts: workouts
-                        )
+                    Button {
+                        selectedWeekItem = item
                     } label: {
                         HStack {
                             Text(item.label)
                             Spacer()
-                            Text(VolumeFormatter.string(from: item.volume, locale: locale))
+                            Text(VolumeFormatter.stringWithFraction(from: item.volume, locale: locale))
                                 .font(.subheadline.weight(.semibold))
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.tertiary)
+                                .imageScale(.small)
+                                .font(.system(size: 17, weight: .semibold))
                         }
                         .padding(.vertical, 4)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
                 }
                 if weeklyListData.isEmpty {
                     Text("期間内の記録がありません")
@@ -98,7 +99,14 @@ struct OverviewExerciseDetailView: View {
         .listStyle(.insetGrouped)
         .navigationTitle(exercise.name)
         .navigationBarTitleDisplayMode(.large)
-        .onChange(of: selectedWeekStart) { _, newValue in
+        .navigationDestination(item: $selectedWeekItem) { item in
+            OverviewExerciseWeekDetailView(
+                weekStart: item.start,
+                exerciseName: exercise.name,
+                workouts: workouts
+            )
+        }
+        .onChange(of: selectedWeekItem) { _, newValue in
             if newValue != nil {
                 navigationFeedbackTrigger += 1
             }

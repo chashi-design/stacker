@@ -125,8 +125,8 @@ final class LogViewModel: ObservableObject {
             let grouped = Dictionary(grouping: workout.sets, by: { $0.exerciseName })
             let mapped = grouped.map { exerciseName, sets -> DraftExerciseEntry in
                 let rows: [DraftSetRow] = sets.map { set -> DraftSetRow in
-                    let intWeight = Int(set.weight.rounded(.toNearestOrAwayFromZero))
-                    return DraftSetRow(weightText: String(intWeight), repsText: String(set.reps))
+                    let weightText = DraftSetRow.formattedWeightText(set.weight)
+                    return DraftSetRow(weightText: weightText, repsText: String(set.reps))
                 }
                 var entry = DraftExerciseEntry(exerciseName: exerciseName, defaultSetCount: 0)
                 entry.sets = rows
@@ -224,12 +224,23 @@ struct DraftSetRow: Identifiable {
     var repsText: String = ""
 
     func toExerciseSet(exerciseName: String) -> ExerciseSet? {
-        guard let weightInt = Int(weightText), let reps = Int(repsText) else { return nil }
-        return ExerciseSet(exerciseName: exerciseName, weight: Double(weightInt), reps: reps)
+        guard let weight = Double(weightText), let reps = Int(repsText) else { return nil }
+        return ExerciseSet(exerciseName: exerciseName, weight: weight, reps: reps)
     }
 
     var isValid: Bool {
-        Int(weightText) != nil && Int(repsText) != nil
+        Double(weightText) != nil && Int(repsText) != nil
+    }
+
+    static func formattedWeightText(_ weight: Double) -> String {
+        if weight.rounded(.towardZero) == weight {
+            return String(Int(weight))
+        }
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 3
+        formatter.minimumFractionDigits = 0
+        return formatter.string(from: NSNumber(value: weight)) ?? String(weight)
     }
 }
 

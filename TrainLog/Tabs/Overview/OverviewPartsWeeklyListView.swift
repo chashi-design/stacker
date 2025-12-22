@@ -17,19 +17,13 @@ struct OverviewPartsWeeklyListView: View {
 
     private let locale = Locale(identifier: "ja_JP")
     @State private var navigationFeedbackTrigger = 0
-    @State private var selectedWeekStart: Date?
+    @State private var selectedWeekItem: WeekListItem?
 
     var body: some View {
         List {
             ForEach(items) { item in
-                NavigationLink(tag: item.start, selection: $selectedWeekStart) {
-                    OverviewPartsWeekDetailView(
-                        weekStart: item.start,
-                        muscleGroup: item.muscleGroup,
-                        displayName: item.displayName,
-                        workouts: workouts,
-                        exercises: exercises
-                    )
+                Button {
+                    selectedWeekItem = item
                 } label: {
                     HStack {
                         Text(item.label)
@@ -41,11 +35,21 @@ struct OverviewPartsWeeklyListView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
         }
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
-        .onChange(of: selectedWeekStart) { _, newValue in
+        .navigationDestination(item: $selectedWeekItem) { item in
+            OverviewPartsWeekDetailView(
+                weekStart: item.start,
+                muscleGroup: item.muscleGroup,
+                displayName: item.displayName,
+                workouts: workouts,
+                exercises: exercises
+            )
+        }
+        .onChange(of: selectedWeekItem) { _, newValue in
             if newValue != nil {
                 navigationFeedbackTrigger += 1
             }

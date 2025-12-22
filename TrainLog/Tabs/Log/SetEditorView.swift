@@ -33,13 +33,17 @@ struct SetEditorView: View {
                                 set: { viewModel.updateSetRow(exerciseID: exerciseID, setID: set.id, weightText: $0, repsText: viewModel.repsText(exerciseID: exerciseID, setID: set.id)) }
                             )
                         )
-                        .keyboardType(.numberPad)
+                        .keyboardType(.decimalPad)
                         .focused($focusedField, equals: .weight(set.id))
                         .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
+                        .padding(.vertical, 10)
                         .background(Color(.tertiarySystemFill))
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                         .frame(width: 110)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            focusedField = .weight(set.id)
+                        }
 
                         TextField(
                             "レップ数",
@@ -51,10 +55,14 @@ struct SetEditorView: View {
                         .keyboardType(.numberPad)
                         .focused($focusedField, equals: .reps(set.id))
                         .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
+                        .padding(.vertical, 10)
                         .background(Color(.tertiarySystemFill))
                         .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .frame(width: 100)
+                        .frame(width: 110)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            focusedField = .reps(set.id)
+                        }
 
                         Spacer()
 
