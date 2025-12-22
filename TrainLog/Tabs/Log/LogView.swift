@@ -15,17 +15,21 @@ struct LogView: View {
     @State private var selectedEntriesForDeletion: Set<UUID> = []
     @State private var isShowingDeleteAlert = false
     @State private var navigationFeedbackTrigger = 0
-    @State private var selectedDraftExerciseID: UUID?
+    @State private var path: [LogRoute] = []
+
+    private enum LogRoute: Hashable {
+        case edit(UUID)
+    }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             Form {
                 calendarSection
                 exerciseSection
             }
             .scrollDismissesKeyboard(.immediately)
-            .onChange(of: selectedDraftExerciseID) { _, newValue in
-                if newValue != nil {
+            .onChange(of: path) { oldValue, newValue in
+                if newValue.count > oldValue.count {
                     navigationFeedbackTrigger += 1
                 }
             }
@@ -118,6 +122,12 @@ struct LogView: View {
             } message: {
                 Text("\(selectedEntriesForDeletion.count)件の種目を削除します。")
             }
+            .navigationDestination(for: LogRoute.self) { route in
+                switch route {
+                case .edit(let id):
+                    SetEditorView(viewModel: viewModel, exerciseID: id)
+                }
+            }
         }
     }
 
@@ -199,9 +209,7 @@ struct LogView: View {
                                 toggleSelection(for: entry.id)
                             }
                         } else {
-                            NavigationLink(tag: entry.id, selection: $selectedDraftExerciseID) {
-                                SetEditorView(viewModel: viewModel, exerciseID: entry.id)
-                            } label: {
+                            NavigationLink(value: LogRoute.edit(entry.id)) {
                                 HStack(spacing: 16) {
                                     Image(systemName: "circle.fill")
                                         .foregroundStyle(muscleColor(for: entry.exerciseName))

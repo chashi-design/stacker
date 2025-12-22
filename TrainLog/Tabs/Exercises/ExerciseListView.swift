@@ -5,15 +5,11 @@ struct ExerciseListView: View {
     let exercises: [ExerciseCatalog]
 
     @EnvironmentObject private var favoritesStore: ExerciseFavoritesStore
-    @State private var navigationFeedbackTrigger = 0
-    @State private var selectedExerciseID: String?
 
     var body: some View {
         List {
             ForEach(exercises, id: \.id) { exercise in
-                NavigationLink(tag: exercise.id, selection: $selectedExerciseID) {
-                    ExerciseDetailView(exercise: exercise)
-                } label: {
+                NavigationLink(value: ExerciseRoute.detail(exercise)) {
                     ExerciseRow(
                         exercise: exercise,
                         isFavorite: favoritesStore.isFavorite(exercise.id)
@@ -40,12 +36,6 @@ struct ExerciseListView: View {
         }
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
-        .onChange(of: selectedExerciseID) { _, newValue in
-            if newValue != nil {
-                navigationFeedbackTrigger += 1
-            }
-        }
-        .sensoryFeedback(.impact(weight: .light), trigger: navigationFeedbackTrigger)
     }
 }
 

@@ -5,7 +5,7 @@ struct ExerciseTabView: View {
     @State private var exercises: [ExerciseCatalog] = []
     @State private var loadFailed = false
     @State private var navigationFeedbackTrigger = 0
-    @State private var selectedDestination: ExerciseTabDestination?
+    @State private var path: [ExerciseRoute] = []
 
     private let muscleGroupOrder = ["chest", "shoulders", "arms", "back", "legs", "abs", "other"]
 
@@ -35,15 +35,10 @@ struct ExerciseTabView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             List {
                 Section {
-                    NavigationLink(tag: .favorites, selection: $selectedDestination) {
-                        ExerciseListView(
-                            title: "お気に入り",
-                            exercises: favoriteExercises
-                        )
-                    } label: {
+                    NavigationLink(value: ExerciseRoute.favorites) {
                         HStack(spacing: 12) {
                             Image(systemName: "star.fill")
                                 .foregroundStyle(.yellow)
@@ -62,12 +57,7 @@ struct ExerciseTabView: View {
 
                 Section("カテゴリ") {
                     ForEach(categories) { category in
-                        NavigationLink(tag: .category(category.id), selection: $selectedDestination) {
-                            ExerciseListView(
-                                title: category.title,
-                                exercises: category.exercises
-                            )
-                        } label: {
+                        NavigationLink(value: ExerciseRoute.category(category.id)) {
                             HStack(spacing: 12) {
                                 Circle()
                                     .fill(category.color)
@@ -95,8 +85,22 @@ struct ExerciseTabView: View {
                 Button("OK", role: .cancel) {}
             }
             .animation(.default, value: favoriteExercises)
-            .onChange(of: selectedDestination) { _, newValue in
-                if newValue != nil {
+            .navigationDestination(for: ExerciseRoute.self) { route in
+                switch route {
+                case .favorites:
+                    ExerciseListView(title: "お気に入り", exercises: favoriteExercises)
+                case .category(let id):
+                    if let category = categories.first(where: { $0.id == id }) {
+                        ExerciseListView(title: category.title, exercises: category.exercises)
+                    } else {
+                        ExerciseListView(title: MuscleGroupLabel.label(for: id), exercises: [])
+                    }
+                case .detail(let exercise):
+                    ExerciseDetailView(exercise: exercise)
+                }
+            }
+            .onChange(of: path) { oldValue, newValue in
+                if newValue.count > oldValue.count {
                     navigationFeedbackTrigger += 1
                 }
             }
@@ -122,9 +126,10 @@ struct ExerciseCategory: Identifiable {
     let exercises: [ExerciseCatalog]
 }
 
-private enum ExerciseTabDestination: Hashable {
+enum ExerciseRoute: Hashable {
     case favorites
     case category(String)
+    case detail(ExerciseCatalog)
 }
 
 struct ExerciseRow: View {
