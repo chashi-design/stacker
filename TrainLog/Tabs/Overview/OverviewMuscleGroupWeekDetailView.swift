@@ -1,7 +1,7 @@
 import SwiftUI
 
-// 週ごとの詳細（曜日別のセット/ボリューム内訳）
-struct OverviewPartsWeekDetailView: View {
+// 部位ごとの週別詳細画面（曜日別のセット/ボリューム内訳）
+struct OverviewMuscleGroupWeekDetailView: View {
     let weekStart: Date
     let muscleGroup: String
     let displayName: String
@@ -37,9 +37,15 @@ struct OverviewPartsWeekDetailView: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 if summary.totalVolume > 0 {
-                                    Text("(\(VolumeFormatter.stringWithFraction(from: summary.totalVolume, locale: locale)))")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
+                                    let parts = VolumeFormatter.volumePartsWithFraction(from: summary.totalVolume, locale: locale)
+                                    ValueWithUnitText(
+                                        value: "(\(parts.value)",
+                                        unit: " \(parts.unit))",
+                                        valueFont: .subheadline,
+                                        unitFont: .caption,
+                                        valueColor: .secondary,
+                                        unitColor: .secondary
+                                    )
                                 }
                             }
                         }
@@ -57,7 +63,15 @@ struct OverviewPartsWeekDetailView: View {
                                             Text("\(index + 1)セット")
                                             Spacer()
                                             if set.weight > 0 {
-                                                Text(VolumeFormatter.weightString(from: set.weight, locale: locale))
+                                                let parts = VolumeFormatter.weightParts(from: set.weight, locale: locale)
+                                                ValueWithUnitText(
+                                                    value: parts.value,
+                                                    unit: parts.unit,
+                                                    valueFont: .subheadline,
+                                                    unitFont: .caption,
+                                                    valueColor: .secondary,
+                                                    unitColor: .secondary
+                                                )
                                             }
                                             Text("\(set.reps)回")
                                         }

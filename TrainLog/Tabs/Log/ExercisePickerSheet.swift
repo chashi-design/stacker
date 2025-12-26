@@ -10,6 +10,8 @@ struct ExercisePickerSheet: View {
     @FocusState private var isSearchFocused: Bool
     @State private var selectedGroup: String?
     @State private var searchText: String = ""
+    @State private var selectionFeedbackTrigger = 0
+    @State private var searchFeedbackTrigger = 0
 
     private let muscleGroupOrder = ["chest", "shoulders", "arms", "back", "legs", "abs"]
     private let searchGroupOrder = ["chest", "shoulders", "arms", "back", "legs", "abs"]
@@ -48,6 +50,19 @@ struct ExercisePickerSheet: View {
                 )
                 .searchFocused($isSearchFocused)
                 .modifier(SearchToolbarVisibility())
+                .onChange(of: selections) { _, newValue in
+                    selectionFeedbackTrigger += 1
+                }
+                .onChange(of: isSearchFocused) { _, newValue in
+                    searchFeedbackTrigger += 1
+                }
+                .onChange(of: searchText) { oldValue, newValue in
+                    if !oldValue.isEmpty, newValue.isEmpty {
+                        searchFeedbackTrigger += 1
+                    }
+                }
+                .sensoryFeedback(.impact(weight: .light), trigger: selectionFeedbackTrigger)
+                .sensoryFeedback(.impact(weight: .light), trigger: searchFeedbackTrigger)
         }
         .onAppear {
             selectedGroup = muscleGroups.first

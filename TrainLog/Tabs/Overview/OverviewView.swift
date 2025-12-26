@@ -99,7 +99,7 @@ struct OverviewMuscleGrid: View {
             }
         }
         .navigationDestination(item: $selectedMuscleGroup) { item in
-            OverviewPartsView(
+            OverviewMuscleGroupSummaryView(
                 muscleGroup: item.muscleGroup,
                 displayName: item.displayName,
                 exercises: exercises.filter { $0.muscleGroup == item.muscleGroup },
@@ -140,9 +140,13 @@ struct OverviewMuscleCard: View {
                 Text(monthLabel)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                Text(VolumeFormatter.stringWithFraction(from: volume, locale: locale))
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(.primary)
+                let parts = VolumeFormatter.volumePartsWithFraction(from: volume, locale: locale)
+                ValueWithUnitText(
+                    value: parts.value,
+                    unit: " \(parts.unit)",
+                    valueFont: .system(.title, design: .rounded).weight(.bold),
+                    unitFont: .system(.subheadline, design: .rounded).weight(.semibold),
+                )
             }
             Spacer()
             Image(systemName: "chevron.right")
@@ -745,6 +749,16 @@ enum VolumeFormatter {
         return "\(text) kg"
     }
 
+    static func volumeParts(from volume: Double, locale: Locale) -> (value: String, unit: String) {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = locale
+        formatter.maximumFractionDigits = 0
+        let number = NSNumber(value: volume)
+        let text = formatter.string(from: number) ?? "0"
+        return (text, "kg")
+    }
+
     static func stringWithFraction(from volume: Double, locale: Locale) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -754,6 +768,17 @@ enum VolumeFormatter {
         let number = NSNumber(value: volume)
         let text = formatter.string(from: number) ?? "0"
         return "\(text) kg"
+    }
+
+    static func volumePartsWithFraction(from volume: Double, locale: Locale) -> (value: String, unit: String) {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = locale
+        formatter.maximumFractionDigits = 3
+        formatter.minimumFractionDigits = 0
+        let number = NSNumber(value: volume)
+        let text = formatter.string(from: number) ?? "0"
+        return (text, "kg")
     }
 
     static func weightString(from weight: Double, locale: Locale) -> String {
@@ -768,6 +793,20 @@ enum VolumeFormatter {
         let number = NSNumber(value: weight)
         let text = formatter.string(from: number) ?? String(weight)
         return "\(text)kg"
+    }
+
+    static func weightParts(from weight: Double, locale: Locale) -> (value: String, unit: String) {
+        if weight.rounded(.towardZero) == weight {
+            return ("\(Int(weight))", "kg")
+        }
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = locale
+        formatter.maximumFractionDigits = 3
+        formatter.minimumFractionDigits = 0
+        let number = NSNumber(value: weight)
+        let text = formatter.string(from: number) ?? String(weight)
+        return (text, "kg")
     }
 }
 

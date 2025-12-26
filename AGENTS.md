@@ -38,6 +38,8 @@
 - SwiftUI ファイルは `#Preview` をできるだけ用意
 - 1 ファイルが 300 行超えたら分割を検討
 - segmented control は必ず触覚FBを付与し、共通の `segmentedHaptic` を利用する
+- 画面ファイルには「何の画面か」を示すコメントを必ず1行入れる
+- enum など定義専用ファイルは、内容が分かるファイル名にする（例: `ExerciseChartPeriod.swift`）
 
 ## ファイル分割の粒度
 - 画面単位でファイル分割する（例: 1画面1ファイル）。
@@ -96,6 +98,8 @@
 - 触覚FBは「選択状態の変化」で発火させ、行ごとに `sensoryFeedback` を付けない（複数発火を防ぐ）
 - `if/else` の分岐に `onChange`/`sensoryFeedback` を付ける場合は `Group` で包み、同一Viewに修飾子を適用する
 - 触覚FBの強度は原則 `.light` を使う（例外が必要なら事前に相談）
+- 種目追加のリスト選択/解除は選択状態の変化で触覚FBを発火させる
+- 検索窓のフォーカス変更とクリア（X）でも触覚FBを発火させる
 
 ## Navigation / Error Notes
 - `navigationDestination(item:)` を使う場合、`item` は `Hashable` 準拠が必須
@@ -114,6 +118,7 @@
 - 画面遷移方法を変える場合（sheet → navigation など）
 - UI が大きく変わる場合（特にログ入力UI）
 - 関連ファイルを大幅に増やす場合
+- 未使用のViewファイルを削除する場合（参照0件でも必ず確認）
 
 ---
 

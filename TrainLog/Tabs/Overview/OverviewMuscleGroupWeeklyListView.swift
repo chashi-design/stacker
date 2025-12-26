@@ -9,7 +9,8 @@ struct WeekListItem: Identifiable, Hashable {
     let displayName: String
 }
 
-struct OverviewPartsWeeklyListView: View {
+// 部位ごとの週別記録一覧を表示する画面
+struct OverviewMuscleGroupWeeklyListView: View {
     let title: String
     let items: [WeekListItem]
     let workouts: [Workout]
@@ -27,11 +28,22 @@ struct OverviewPartsWeeklyListView: View {
                 } label: {
                     HStack {
                         Text(item.label)
+                            .font(.headline)
                         Spacer()
-                        Text(VolumeFormatter.string(from: item.volume, locale: locale))
-                            .font(.subheadline.weight(.semibold))
+                        let parts = VolumeFormatter.volumeParts(from: item.volume, locale: locale)
+                        ValueWithUnitText(
+                            value: parts.value,
+                            unit: " \(parts.unit)",
+                            valueFont: .body,
+                            unitFont: .subheadline,
+                            valueColor: .secondary,
+                            unitColor: .secondary
+                        )
+                        Image(systemName: "chevron.right")
+                            .foregroundStyle(.tertiary)
+                            .imageScale(.small)
+                            .font(.system(size: 17, weight: .semibold))
                     }
-                    .padding(.vertical, 8)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contentShape(Rectangle())
                 }
@@ -41,7 +53,7 @@ struct OverviewPartsWeeklyListView: View {
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $selectedWeekItem) { item in
-            OverviewPartsWeekDetailView(
+            OverviewMuscleGroupWeekDetailView(
                 weekStart: item.start,
                 muscleGroup: item.muscleGroup,
                 displayName: item.displayName,

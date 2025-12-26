@@ -1,6 +1,7 @@
 import SwiftUI
 
-struct OverviewPartsView: View {
+// 部位別の集計画面を表示する画面
+struct OverviewMuscleGroupSummaryView: View {
     let muscleGroup: String
     let displayName: String
     let exercises: [ExerciseCatalog]
@@ -142,13 +143,22 @@ struct OverviewPartsView: View {
                         } label: {
                             HStack {
                                 Text(item.label)
+                                    .font(.headline)
                                 Spacer()
-                                Text(VolumeFormatter.stringWithFraction(from: item.volume, locale: locale))
-                                    .font(.subheadline.weight(.semibold))
+                                let parts = VolumeFormatter.volumePartsWithFraction(from: item.volume, locale: locale)
+                                ValueWithUnitText(
+                                    value: parts.value,
+                                    unit: " \(parts.unit)",
+                                    valueFont: .body,
+                                    unitFont: .subheadline,
+                                    valueColor: .secondary,
+                                    unitColor: .secondary
+                                )
                                 Image(systemName: "chevron.right")
                                     .foregroundStyle(.tertiary)
                                     .imageScale(.small)
-                                    .font(.system(size: 17, weight: .semibold))
+                                    .font(.system(size: 17))
+                                    .fontWeight(.semibold)
                             }
                             .padding(.vertical, 4)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -158,7 +168,7 @@ struct OverviewPartsView: View {
                     }
                 } header: {
                     HStack {
-                        Text("週別記録")
+                        Text("週ごとの記録")
                         Spacer()
                         Button {
                             selectedWeeklyListItem = WeeklyListDestination()
@@ -192,14 +202,23 @@ struct OverviewPartsView: View {
                                 Text(currentWeekLabel)
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
-                                Text(VolumeFormatter.stringWithFraction(from: item.volume, locale: locale))
-                                    .font(.subheadline.weight(.semibold))
+                                
                             }
                             Spacer()
+                            let parts = VolumeFormatter.volumePartsWithFraction(from: item.volume, locale: locale)
+                            ValueWithUnitText(
+                                value: parts.value,
+                                unit: " \(parts.unit)",
+                                valueFont: .body,
+                                unitFont: .subheadline,
+                                valueColor: .secondary,
+                                unitColor: .secondary
+                            )
                             Image(systemName: "chevron.right")
                                 .foregroundStyle(.tertiary)
                                 .imageScale(.small)
-                                .font(.system(size: 17, weight: .semibold))
+                                .font(.system(size: 17))
+                                .fontWeight(.semibold)
                         }
                         .padding(.vertical, 8)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -217,7 +236,7 @@ struct OverviewPartsView: View {
         .navigationBarTitleDisplayMode(.large)
         .listSectionSpacing(10)
         .navigationDestination(item: $selectedWeekItem) { item in
-            OverviewPartsWeekDetailView(
+            OverviewMuscleGroupWeekDetailView(
                 weekStart: item.start,
                 muscleGroup: item.muscleGroup,
                 displayName: item.displayName,
@@ -226,15 +245,15 @@ struct OverviewPartsView: View {
             )
         }
         .navigationDestination(item: $selectedWeeklyListItem) { _ in
-            OverviewPartsWeeklyListView(
-                title: "週間記録",
+            OverviewMuscleGroupWeeklyListView(
+                title: "週ごとの記録",
                 items: weeklyListData,
                 workouts: workouts,
                 exercises: exercises
             )
         }
         .navigationDestination(item: $selectedExerciseItem) { item in
-            OverviewExerciseDetailView(
+            OverviewExerciseSummaryView(
                 exercise: item.exercise,
                 workouts: workouts
             )

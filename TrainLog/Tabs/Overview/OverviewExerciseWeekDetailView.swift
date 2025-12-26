@@ -1,5 +1,6 @@
 import SwiftUI
 
+// 種目の週詳細（週内7日分のセット一覧）を表示する画面
 struct OverviewExerciseWeekDetailView: View {
     let weekStart: Date
     let exerciseName: String
@@ -32,9 +33,20 @@ struct OverviewExerciseWeekDetailView: View {
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             } else {
-                                Text("\(summary.sets.count)セット (\(VolumeFormatter.stringWithFraction(from: summary.totalVolume, locale: locale)))")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                                let parts = VolumeFormatter.volumePartsWithFraction(from: summary.totalVolume, locale: locale)
+                                HStack(spacing: 4) {
+                                    Text("\(summary.sets.count)セット (")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                    ValueWithUnitText(
+                                        value: parts.value,
+                                        unit: " \(parts.unit))",
+                                        valueFont: .subheadline,
+                                        unitFont: .caption,
+                                        valueColor: .secondary,
+                                        unitColor: .secondary
+                                    )
+                                }
                             }
                         }
                         if !summary.sets.isEmpty {
@@ -43,7 +55,15 @@ struct OverviewExerciseWeekDetailView: View {
                                     Text("\(index + 1)セット")
                                     Spacer()
                                     if set.weight > 0 {
-                                        Text(VolumeFormatter.weightString(from: set.weight, locale: locale))
+                                        let parts = VolumeFormatter.weightParts(from: set.weight, locale: locale)
+                                        ValueWithUnitText(
+                                            value: parts.value,
+                                            unit: parts.unit,
+                                            valueFont: .subheadline,
+                                            unitFont: .caption,
+                                            valueColor: .secondary,
+                                            unitColor: .secondary
+                                        )
                                     }
                                     Text("\(set.reps)回")
                                 }

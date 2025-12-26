@@ -1,8 +1,7 @@
 import SwiftUI
 
-// MARK: - Exercise detail (timeline)
-
-struct OverviewExerciseDetailView: View {
+// 種目ごとの集計画面を表示する画面
+struct OverviewExerciseSummaryView: View {
     let exercise: ExerciseCatalog
     let workouts: [Workout]
 
@@ -69,16 +68,24 @@ struct OverviewExerciseDetailView: View {
                 }
             }
 
-            Section("週別記録") {
+            Section("週ごとの記録") {
                 ForEach(weeklyListData) { item in
                     Button {
                         selectedWeekItem = item
                     } label: {
                         HStack {
                             Text(item.label)
+                                .font(.headline)
                             Spacer()
-                            Text(VolumeFormatter.stringWithFraction(from: item.volume, locale: locale))
-                                .font(.subheadline.weight(.semibold))
+                            let parts = VolumeFormatter.volumePartsWithFraction(from: item.volume, locale: locale)
+                            ValueWithUnitText(
+                                value: parts.value,
+                                unit: " \(parts.unit)",
+                                valueFont: .body,
+                                unitFont: .subheadline,
+                                valueColor: .secondary,
+                                unitColor: .secondary
+                            )
                             Image(systemName: "chevron.right")
                                 .foregroundStyle(.tertiary)
                                 .imageScale(.small)
