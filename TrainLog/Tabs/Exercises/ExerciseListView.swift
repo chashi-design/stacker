@@ -30,8 +30,16 @@ struct ExerciseListView: View {
                 }
             }
             if exercises.isEmpty {
-                Text("登録されている種目がありません")
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .center, spacing: 12) {
+                    Image(systemName: "star.fill")
+                        .foregroundStyle(.tertiary)
+                        .imageScale(.large)
+                        .font(.system(size: 32, weight: .semibold))
+                    Text("登録されている種目がありません。\nカテゴリから選んで\nお気に入りに追加しましょう。")
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
             }
         }
         .navigationTitle(title)
@@ -39,14 +47,10 @@ struct ExerciseListView: View {
     }
 }
 
+
 #Preview {
     NavigationStack {
-        ExerciseListView(
-            title: "胸",
-            exercises: [
-                ExerciseCatalog(id: "ex001", name: "ベンチプレス", nameEn: "Barbell Bench Press", muscleGroup: "chest", aliases: [], equipment: "barbell", pattern: "horizontal_push")
-            ]
-        )
-        .environmentObject(ExerciseFavoritesStore())
+        ExerciseTabView()
+            .environmentObject(ExerciseFavoritesStore())
     }
 }

@@ -1,4 +1,3 @@
-import Charts
 import SwiftData
 import SwiftUI
 
@@ -160,43 +159,6 @@ struct OverviewMuscleCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 26))
     }
 }
-
-// MARK: - Parts screen
-struct ExerciseVolumeChart: View {
-    let data: [(label: String, value: Double)]
-    var barColor: Color = .blue
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Chart {
-                ForEach(Array(data.enumerated()), id: \.offset) { _, item in
-                    BarMark(
-                        x: .value("日付", item.label),
-                        y: .value("ボリューム(kg)", item.value)
-                    )
-                    .foregroundStyle(barColor)
-                    .cornerRadius(6)
-                }
-            }
-            .chartXAxis {
-                AxisMarks(values: data.map { $0.label }) { value in
-                    AxisValueLabel()
-                }
-            }
-            .chartYAxisLabel("kg")
-            .frame(height: 200)
-            .padding(.horizontal, 12)
-            .padding(.top, 12)
-            .padding(.bottom, 12)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemGroupedBackground))
-
-    }
-}
-
-
-
 
 // MARK: - Metrics + helpers
 

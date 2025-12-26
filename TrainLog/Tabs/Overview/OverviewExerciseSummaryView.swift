@@ -60,7 +60,10 @@ struct OverviewExerciseSummaryView: View {
 
                     ExerciseVolumeChart(
                         data: chartData,
-                        barColor: MuscleGroupColor.color(for: exercise.muscleGroup)
+                        barColor: MuscleGroupColor.color(for: exercise.muscleGroup),
+                        animateOnAppear: true,
+                        animateOnTrigger: true,
+                        animationTrigger: chartPeriod.hashValue
                     )
                         .listRowInsets(EdgeInsets())
                         .listRowSeparator(.hidden)
