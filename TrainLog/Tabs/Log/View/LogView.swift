@@ -7,6 +7,7 @@ struct LogView: View {
     @Environment(\.modelContext) private var context
     @StateObject private var viewModel = LogViewModel()
     @EnvironmentObject private var favoritesStore: ExerciseFavoritesStore
+    @Environment(\.weightUnit) private var weightUnit
     @Query(sort: \Workout.date, order: .reverse) private var workoutsQuery: [Workout]
     private var workouts: [Workout] { workoutsQuery }
     @State private var isShowingExercisePicker = false
@@ -42,7 +43,7 @@ struct LogView: View {
             .navigationTitle("メモ")
                 .task {
                     await viewModel.loadExercises()
-                    viewModel.syncDraftsForSelectedDate(context: context)
+                    viewModel.syncDraftsForSelectedDate(context: context, unit: weightUnit)
                 }
             .sheet(isPresented: $isShowingExercisePicker) {
                 ExercisePickerSheet(
@@ -66,11 +67,14 @@ struct LogView: View {
                 .environmentObject(favoritesStore)
             }
             .onChange(of: viewModel.selectedDate) { _, _ in
-                viewModel.syncDraftsForSelectedDate(context: context)
+                viewModel.syncDraftsForSelectedDate(context: context, unit: weightUnit)
+            }
+            .onChange(of: weightUnit) { _, _ in
+                viewModel.syncDraftsForSelectedDate(context: context, unit: weightUnit)
             }
             .onReceive(viewModel.$draftRevision.dropFirst()) { _ in
                 if !viewModel.isSyncingDrafts {
-                    viewModel.saveWorkout(context: context)
+                    viewModel.saveWorkout(context: context, unit: weightUnit)
                 }
             }
             .onChange(of: editMode) { oldValue, newValue in
@@ -191,12 +195,12 @@ struct LogView: View {
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text(entry.exerciseName)
                                         .font(.headline)
-                                    let weight = formattedWeight(totalWeight(for: entry))
+                                    let weight = formattedWeight(totalWeight(for: entry, unit: weightUnit))
                                     Group {
                                         if entry.completedSetCount == 0 {
                                             Text("\(entry.completedSetCount)セット")
                                         } else {
-                                            Text("\(entry.completedSetCount)セット (\(weight)kg)")
+                                            Text("\(entry.completedSetCount)セット (\(weight)\(weightUnit.unitLabel))")
                                         }
                                     }
                                     .font(.subheadline)
@@ -216,12 +220,12 @@ struct LogView: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(entry.exerciseName)
                                             .font(.headline)
-                                        let weight = formattedWeight(totalWeight(for: entry))
+                                        let weight = formattedWeight(totalWeight(for: entry, unit: weightUnit))
                                         Group {
                                             if entry.completedSetCount == 0 {
                                                 Text("\(entry.completedSetCount)セット")
                                             } else {
-                                                Text("\(entry.completedSetCount)セット (\(weight)kg)")
+                                                Text("\(entry.completedSetCount)セット (\(weight)\(weightUnit.unitLabel))")
                                             }
                                         }
                                         .font(.subheadline)
@@ -250,16 +254,17 @@ struct LogView: View {
         }
     }
 
-    private func totalWeight(for entry: DraftExerciseEntry) -> Double {
+    private func totalWeight(for entry: DraftExerciseEntry, unit: WeightUnit) -> Double {
         entry.sets.compactMap { set in
             guard let weight = Double(set.weightText), let reps = Int(set.repsText) else { return nil }
-            return weight * Double(reps)
+            let weightKg = unit.kgValue(fromDisplay: weight)
+            return weightKg * Double(reps)
         }
         .reduce(0, +)
     }
 
     private func formattedWeight(_ weight: Double) -> String {
-        DraftSetRow.formattedWeightText(weight)
+        DraftSetRow.formattedWeightText(weight, unit: weightUnit, locale: Locale.current)
     }
 }
 

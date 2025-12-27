@@ -7,6 +7,7 @@ struct OverviewMuscleGroupSummaryView: View {
     let exercises: [ExerciseCatalog]
     let workouts: [Workout]
     @EnvironmentObject private var favoritesStore: ExerciseFavoritesStore
+    @Environment(\.weightUnit) private var weightUnit
 
     @State private var chartPeriod: PartsChartPeriod = .day
     @State private var filter: PartsFilter = .all
@@ -72,7 +73,7 @@ struct OverviewMuscleGroupSummaryView: View {
     private var chartData: [(label: String, value: Double)] {
         chartSeries
             .sorted { $0.date < $1.date }
-            .map { (chartLabel(for: $0.date, period: chartPeriod), $0.volume) }
+            .map { (chartLabel(for: $0.date, period: chartPeriod), weightUnit.displayValue(fromKg: $0.volume)) }
     }
 
     private var recentWeeklyListData: [WeekListItem] {
@@ -131,7 +132,9 @@ struct OverviewMuscleGroupSummaryView: View {
                     barColor: MuscleGroupColor.color(for: muscleGroup),
                     animateOnAppear: true,
                     animateOnTrigger: true,
-                    animationTrigger: chartPeriod.hashValue
+                    animationTrigger: chartPeriod.hashValue,
+                    yValueLabel: "ボリューム(\(weightUnit.unitLabel))",
+                    yAxisLabel: weightUnit.unitLabel
                 )
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
@@ -148,7 +151,7 @@ struct OverviewMuscleGroupSummaryView: View {
                                 Text(item.label)
                                     .font(.headline)
                                 Spacer()
-                                let parts = VolumeFormatter.volumePartsWithFraction(from: item.volume, locale: locale)
+                                let parts = VolumeFormatter.volumePartsWithFraction(from: item.volume, locale: locale, unit: weightUnit)
                                 ValueWithUnitText(
                                     value: parts.value,
                                     unit: " \(parts.unit)",
@@ -208,7 +211,7 @@ struct OverviewMuscleGroupSummaryView: View {
                                 
                             }
                             Spacer()
-                            let parts = VolumeFormatter.volumePartsWithFraction(from: item.volume, locale: locale)
+                            let parts = VolumeFormatter.volumePartsWithFraction(from: item.volume, locale: locale, unit: weightUnit)
                             ValueWithUnitText(
                                 value: parts.value,
                                 unit: " \(parts.unit)",

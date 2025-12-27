@@ -6,6 +6,7 @@ struct OverviewExerciseWeekDetailView: View {
     let exerciseName: String
     let workouts: [Workout]
 
+    @Environment(\.weightUnit) private var weightUnit
     private let calendar = Calendar.appCurrent
     private let locale = Locale(identifier: "ja_JP")
 
@@ -33,7 +34,7 @@ struct OverviewExerciseWeekDetailView: View {
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             } else {
-                                let parts = VolumeFormatter.volumePartsWithFraction(from: summary.totalVolume, locale: locale)
+                                let parts = VolumeFormatter.volumePartsWithFraction(from: summary.totalVolume, locale: locale, unit: weightUnit)
                                 HStack(spacing: 4) {
                                     Text("\(summary.sets.count)セット (")
                                         .font(.subheadline)
@@ -55,7 +56,7 @@ struct OverviewExerciseWeekDetailView: View {
                                     Text("\(index + 1)セット")
                                     Spacer()
                                     if set.weight > 0 {
-                                        let parts = VolumeFormatter.weightParts(from: set.weight, locale: locale)
+                                        let parts = VolumeFormatter.weightParts(from: set.weight, locale: locale, unit: weightUnit)
                                         ValueWithUnitText(
                                             value: parts.value,
                                             unit: parts.unit,

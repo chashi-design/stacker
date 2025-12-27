@@ -5,6 +5,7 @@ struct OverviewExerciseSummaryView: View {
     let exercise: ExerciseCatalog
     let workouts: [Workout]
 
+    @Environment(\.weightUnit) private var weightUnit
     @State private var chartPeriod: ExerciseChartPeriod = .day
     @State private var navigationFeedbackTrigger = 0
     @State private var selectedWeekItem: ExerciseWeekListItem?
@@ -19,7 +20,7 @@ struct OverviewExerciseSummaryView: View {
             calendar: calendar
         )
         return series.map { point in
-            (axisLabel(for: point.date, period: chartPeriod), point.volume)
+            (axisLabel(for: point.date, period: chartPeriod), weightUnit.displayValue(fromKg: point.volume))
         }
     }
 
@@ -63,7 +64,9 @@ struct OverviewExerciseSummaryView: View {
                         barColor: MuscleGroupColor.color(for: exercise.muscleGroup),
                         animateOnAppear: true,
                         animateOnTrigger: true,
-                        animationTrigger: chartPeriod.hashValue
+                        animationTrigger: chartPeriod.hashValue,
+                        yValueLabel: "ボリューム(\(weightUnit.unitLabel))",
+                        yAxisLabel: weightUnit.unitLabel
                     )
                         .listRowInsets(EdgeInsets())
                         .listRowSeparator(.hidden)
@@ -80,7 +83,7 @@ struct OverviewExerciseSummaryView: View {
                             Text(item.label)
                                 .font(.headline)
                             Spacer()
-                            let parts = VolumeFormatter.volumePartsWithFraction(from: item.volume, locale: locale)
+                            let parts = VolumeFormatter.volumePartsWithFraction(from: item.volume, locale: locale, unit: weightUnit)
                             ValueWithUnitText(
                                 value: parts.value,
                                 unit: " \(parts.unit)",

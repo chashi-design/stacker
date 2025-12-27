@@ -8,6 +8,7 @@ struct OverviewMuscleGroupWeekDetailView: View {
     let workouts: [Workout]
     let exercises: [ExerciseCatalog]
 
+    @Environment(\.weightUnit) private var weightUnit
     private let calendar = Calendar.appCurrent
     private let locale = Locale(identifier: "ja_JP")
 
@@ -37,7 +38,7 @@ struct OverviewMuscleGroupWeekDetailView: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 if summary.totalVolume > 0 {
-                                    let parts = VolumeFormatter.volumePartsWithFraction(from: summary.totalVolume, locale: locale)
+                                    let parts = VolumeFormatter.volumePartsWithFraction(from: summary.totalVolume, locale: locale, unit: weightUnit)
                                     ValueWithUnitText(
                                         value: "(\(parts.value)",
                                         unit: " \(parts.unit))",
@@ -63,7 +64,7 @@ struct OverviewMuscleGroupWeekDetailView: View {
                                             Text("\(index + 1)セット")
                                             Spacer()
                                             if set.weight > 0 {
-                                                let parts = VolumeFormatter.weightParts(from: set.weight, locale: locale)
+                                                let parts = VolumeFormatter.weightParts(from: set.weight, locale: locale, unit: weightUnit)
                                                 ValueWithUnitText(
                                                     value: parts.value,
                                                     unit: parts.unit,

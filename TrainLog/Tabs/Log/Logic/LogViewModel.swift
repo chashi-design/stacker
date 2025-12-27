@@ -53,8 +53,8 @@ final class LogViewModel: ObservableObject {
         draftExercises.first(where: { $0.id == id })
     }
 
-    func saveWorkout(context: ModelContext) {
-        let savedSets = buildExerciseSets()
+    func saveWorkout(context: ModelContext, unit: WeightUnit) {
+        let savedSets = buildExerciseSets(unit: unit)
         let normalizedDate = LogDateHelper.normalized(selectedDate)
 
         if savedSets.isEmpty {
@@ -105,7 +105,7 @@ final class LogViewModel: ObservableObject {
         return try? context.fetch(descriptor).first
     }
 
-    func syncDraftsForSelectedDate(context: ModelContext) {
+    func syncDraftsForSelectedDate(context: ModelContext, unit: WeightUnit) {
         isSyncingDrafts = true
         defer { isSyncingDrafts = false }
         let normalizedNewDate = LogDateHelper.normalized(selectedDate)
@@ -122,10 +122,11 @@ final class LogViewModel: ObservableObject {
         }
 
         if let workout = findWorkout(on: normalizedNewDate, context: context) {
+            let locale = Locale.current
             let grouped = Dictionary(grouping: workout.sets, by: { $0.exerciseName })
             let mapped = grouped.map { exerciseName, sets -> DraftExerciseEntry in
                 let rows: [DraftSetRow] = sets.map { set -> DraftSetRow in
-                    let weightText = DraftSetRow.formattedWeightText(set.weight)
+                    let weightText = DraftSetRow.formattedWeightText(set.weight, unit: unit, locale: locale)
                     return DraftSetRow(weightText: weightText, repsText: String(set.reps))
                 }
                 var entry = DraftExerciseEntry(exerciseName: exerciseName, defaultSetCount: 0)
@@ -190,9 +191,9 @@ final class LogViewModel: ObservableObject {
         }
     }
 
-    private func buildExerciseSets() -> [ExerciseSet] {
+    private func buildExerciseSets(unit: WeightUnit) -> [ExerciseSet] {
         let structured = draftExercises.flatMap { entry in
-            entry.exerciseSets()
+            entry.exerciseSets(unit: unit)
         }
 
         return structured
@@ -209,8 +210,8 @@ struct DraftExerciseEntry: Identifiable {
         self.sets = (0..<defaultSetCount).map { _ in DraftSetRow() }
     }
 
-    func exerciseSets() -> [ExerciseSet] {
-        sets.compactMap { $0.toExerciseSet(exerciseName: exerciseName) }
+    func exerciseSets(unit: WeightUnit) -> [ExerciseSet] {
+        sets.compactMap { $0.toExerciseSet(exerciseName: exerciseName, unit: unit) }
     }
 
     var completedSetCount: Int {
@@ -223,24 +224,18 @@ struct DraftSetRow: Identifiable {
     var weightText: String = ""
     var repsText: String = ""
 
-    func toExerciseSet(exerciseName: String) -> ExerciseSet? {
-        guard let weight = Double(weightText), let reps = Int(repsText) else { return nil }
-        return ExerciseSet(exerciseName: exerciseName, weight: weight, reps: reps)
+    func toExerciseSet(exerciseName: String, unit: WeightUnit) -> ExerciseSet? {
+        guard let weightInput = Double(weightText), let reps = Int(repsText) else { return nil }
+        let weightKg = unit.kgValue(fromDisplay: weightInput)
+        return ExerciseSet(exerciseName: exerciseName, weight: weightKg, reps: reps)
     }
 
     var isValid: Bool {
         Double(weightText) != nil && Int(repsText) != nil
     }
 
-    static func formattedWeightText(_ weight: Double) -> String {
-        if weight.rounded(.towardZero) == weight {
-            return String(Int(weight))
-        }
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 3
-        formatter.minimumFractionDigits = 0
-        return formatter.string(from: NSNumber(value: weight)) ?? String(weight)
+    static func formattedWeightText(_ weight: Double, unit: WeightUnit, locale: Locale) -> String {
+        unit.formattedValue(fromKg: weight, locale: locale, maximumFractionDigits: 3)
     }
 }
 

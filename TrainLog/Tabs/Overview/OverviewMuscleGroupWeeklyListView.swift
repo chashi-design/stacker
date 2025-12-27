@@ -16,6 +16,7 @@ struct OverviewMuscleGroupWeeklyListView: View {
     let workouts: [Workout]
     let exercises: [ExerciseCatalog]
 
+    @Environment(\.weightUnit) private var weightUnit
     private let locale = Locale(identifier: "ja_JP")
     @State private var navigationFeedbackTrigger = 0
     @State private var selectedWeekItem: WeekListItem?
@@ -30,7 +31,7 @@ struct OverviewMuscleGroupWeeklyListView: View {
                         Text(item.label)
                             .font(.headline)
                         Spacer()
-                        let parts = VolumeFormatter.volumeParts(from: item.volume, locale: locale)
+                        let parts = VolumeFormatter.volumeParts(from: item.volume, locale: locale, unit: weightUnit)
                         ValueWithUnitText(
                             value: parts.value,
                             unit: " \(parts.unit)",

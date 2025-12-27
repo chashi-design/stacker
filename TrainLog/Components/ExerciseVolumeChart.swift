@@ -8,6 +8,8 @@ struct ExerciseVolumeChart: View {
     var animateOnAppear: Bool = false
     var animateOnTrigger: Bool = false
     var animationTrigger: Int = 0
+    var yValueLabel: String = "ボリューム(kg)"
+    var yAxisLabel: String = "kg"
     @State private var animateBars = false
 
     var body: some View {
@@ -16,7 +18,7 @@ struct ExerciseVolumeChart: View {
                 ForEach(Array(data.enumerated()), id: \.offset) { _, item in
                     BarMark(
                         x: .value("日付", item.label),
-                        y: .value("ボリューム(kg)", animatedValue(for: item.value))
+                        y: .value(yValueLabel, animatedValue(for: item.value))
                     )
                     .foregroundStyle(barColor)
                     .cornerRadius(8)
@@ -28,7 +30,7 @@ struct ExerciseVolumeChart: View {
                     AxisValueLabel()
                 }
             }
-            .chartYAxisLabel("kg")
+            .chartYAxisLabel(yAxisLabel)
             .frame(height: 200)
             .padding(.horizontal, 12)
             .padding(.top, 12)

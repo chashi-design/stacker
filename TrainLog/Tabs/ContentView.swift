@@ -5,6 +5,7 @@ struct ContentView: View {
     @State private var selectedTab: Tab = .summary
     @State private var tabHapticTrigger = 0
     @StateObject private var favoritesStore = ExerciseFavoritesStore()
+    @AppStorage(WeightUnit.storageKey) private var weightUnitRaw = WeightUnit.kg.rawValue
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -31,6 +32,7 @@ struct ContentView: View {
         }
         .sensoryFeedback(.impact(weight: .light), trigger: tabHapticTrigger)
         .environmentObject(favoritesStore)
+        .environment(\.weightUnit, WeightUnit(rawValue: weightUnitRaw) ?? .kg)
     }
 }
 
