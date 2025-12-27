@@ -87,6 +87,7 @@ struct SetEditorView: View {
                 }
                 .sensoryFeedback(.impact(weight: .light), trigger: addSetHapticTrigger)
             }
+            .contentMargins(.top, 4, for: .scrollContent)
             .onChange(of: focusedField) { _, newValue in
                 if newValue != nil {
                     fieldHapticTrigger += 1

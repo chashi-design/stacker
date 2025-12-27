@@ -50,6 +50,7 @@ struct OverviewMuscleGroupWeeklyListView: View {
                 .buttonStyle(.plain)
             }
         }
+        .contentMargins(.top, 4, for: .scrollContent)
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $selectedWeekItem) { item in

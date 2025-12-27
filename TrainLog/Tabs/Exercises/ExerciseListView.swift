@@ -42,6 +42,7 @@ struct ExerciseListView: View {
                 .frame(maxWidth: .infinity, alignment: .center)
             }
         }
+        .contentMargins(.top, 4, for: .scrollContent)
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
     }

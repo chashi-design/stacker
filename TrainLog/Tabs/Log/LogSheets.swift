@@ -22,21 +22,11 @@ extension View {
     }
 }
 
-private struct ScrollEdgeEffectIfAvailable: ViewModifier {
-    func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            content.scrollEdgeEffectStyle(.soft, for: .all)
-        } else {
-            content
-        }
-    }
-}
-
 extension View {
     @ViewBuilder
-    func applyIfAvailableiOS26<Content: View>(_ transform: (Self) -> Content) -> some View {
+    func applyScrollEdgeEffectStyleIfAvailable() -> some View {
         if #available(iOS 26.0, *) {
-            transform(self)
+            scrollEdgeEffectStyle(.soft, for: .all)
         } else {
             self
         }

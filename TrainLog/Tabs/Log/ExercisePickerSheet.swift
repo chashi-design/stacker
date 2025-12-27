@@ -21,9 +21,7 @@ struct ExercisePickerSheet: View {
             listView
                 .navigationTitle("種目を選択")
                 .navigationBarTitleDisplayMode(.inline)
-                .applyIfAvailableiOS26 { view in
-                    view.scrollEdgeEffectStyle(.soft, for: .all)
-                }
+                .applyScrollEdgeEffectStyleIfAvailable()
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         HapticButton(action: onCancel) { Text("キャンセル") }
@@ -130,9 +128,7 @@ struct ExercisePickerSheet: View {
         .listRowSeparator(.hidden)
         .contentMargins(.top, 0, for: .scrollContent)
         .scrollContentBackground(.visible)
-        .applyIfAvailableiOS26 { view in
-            view.scrollEdgeEffectStyle(.soft, for: .all)
-        }
+        .applyScrollEdgeEffectStyleIfAvailable()
     }
 
     private var muscleGroups: [String] {

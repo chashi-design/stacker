@@ -113,6 +113,7 @@
 - 設定画面は `Tabs/Settings/SettingsView.swift` で管理する
 - Web表示は `SFSafariViewController` を基本利用し、別手段が必要な場合は事前に確認する
 - アクティビティタブ右上の設定導線はモーダル（sheet）で表示し、Xボタンで閉じる
+- セクションラベルがない `List` には `.contentMargins(.top, 4, for: .scrollContent)` を適用する
 
 ## Shared State / Weekly UI Rules
 - お気に入り状態はタブ共通ストアで管理し、TabView配下でenvironmentObject注入する

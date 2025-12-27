@@ -87,6 +87,7 @@ struct OverviewMuscleGroupWeekDetailView: View {
                 }
             }
         }
+        .contentMargins(.top, 4, for: .scrollContent)
         .navigationTitle(weekRangeLabel(for: normalizedWeekStart))
         .navigationBarTitleDisplayMode(.inline)
     }
