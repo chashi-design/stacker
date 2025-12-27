@@ -1,6 +1,7 @@
 import SwiftData
 import SwiftUI
 
+// セット編集画面
 struct SetEditorView: View {
     @ObservedObject var viewModel: LogViewModel
     let exerciseID: UUID
@@ -10,7 +11,7 @@ struct SetEditorView: View {
     @State private var addSetHapticTrigger = 0
     @State private var deleteSetHapticTrigger = 0
     @FocusState private var focusedField: Field?
-
+ 
     private enum Field: Hashable {
         case weight(UUID)
         case reps(UUID)

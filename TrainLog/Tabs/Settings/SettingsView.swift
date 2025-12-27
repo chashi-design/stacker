@@ -39,6 +39,7 @@ struct SettingsView: View {
 
             SettingsVersionRow(versionText: appVersionText)
         }
+        .contentMargins(.top, 4, for: .scrollContent)
         .listStyle(.insetGrouped)
         .navigationTitle("設定")
         .navigationBarTitleDisplayMode(.inline)

@@ -38,7 +38,7 @@ struct OverviewTabView: View {
                     Button {
                         showSettings = true
                     } label: {
-                        Image(systemName: "gearshape.fill")
+                        Image(systemName: "gearshape")
                     }
                     .accessibilityLabel("設定")
                 }

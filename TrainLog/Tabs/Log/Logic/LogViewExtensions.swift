@@ -1,3 +1,5 @@
+// ログ画面向けView拡張
+// キーボードを確実に閉じるため、UIKit の resignFirstResponder を利用
 import SwiftUI
 import UIKit
 
