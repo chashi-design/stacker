@@ -17,7 +17,7 @@ struct SettingsView: View {
         ),
         SettingsLinkItem(
             title: "ライセンス",
-            url: URL(string: "https://chashi-design.github.io/TrainLogApp/docs/license/license")!
+            url: URL(string: "https://chashi-design.github.io/TrainLogApp/docs/license/licenseinfo")!
         )
     ]
 
