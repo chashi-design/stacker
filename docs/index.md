@@ -1,7 +1,7 @@
 # Documents
 
 ## License
-- [License](./license/)
+- [License](./license/licenseinfo.md)
 
 ## Privacy Policy
 - [English](./privacypolicy/english.md)
