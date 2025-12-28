@@ -37,14 +37,20 @@ struct SettingsView: View {
         SettingsStrings(isJapanese: isJapaneseLocale)
     }
 
+    private var docsBaseURL: String {
+        "https://chashi-design.github.io/stacker/docs"
+    }
+
+    private var localePath: String {
+        isJapaneseLocale ? "ja" : "en"
+    }
+
     private var termsURL: URL {
-        let suffix = isJapaneseLocale ? "japanese" : "english"
-        return URL(string: "https://chashi-design.github.io/TrainLogApp/docs/termsofservice/\(suffix)")!
+        URL(string: "\(docsBaseURL)/\(localePath)/terms")!
     }
 
     private var privacyPolicyURL: URL {
-        let suffix = isJapaneseLocale ? "japanese" : "english"
-        return URL(string: "https://chashi-design.github.io/TrainLogApp/docs/privacypolicy/\(suffix)")!
+        URL(string: "\(docsBaseURL)/\(localePath)/privacypolicy")!
     }
 
     var body: some View {
