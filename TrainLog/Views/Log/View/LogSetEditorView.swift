@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import UIKit
 
 // セット編集画面
 struct SetEditorView: View {
@@ -8,6 +9,7 @@ struct SetEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Environment(\.weightUnit) private var weightUnit
+    @Environment(\.openURL) private var openURL
     @State private var fieldHapticTrigger = 0
     @State private var addSetHapticTrigger = 0
     @State private var deleteSetHapticTrigger = 0
@@ -131,6 +133,15 @@ struct SetEditorView: View {
             .sensoryFeedback(.impact(weight: .light), trigger: fieldHapticTrigger)
             .navigationTitle(displayName(for: entry.exerciseId))
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    HapticButton {
+                        openYouTubeSearch(exerciseId: entry.exerciseId)
+                    } label: {
+                        Label(strings.youtubeSearchTitle, systemImage: "play.rectangle")
+                    }
+                }
+            }
         } else {
             VStack(spacing: 12) {
                 Text(strings.missingEntryMessage)
@@ -218,6 +229,51 @@ private extension SetEditorView {
     func displayName(for exerciseId: String) -> String {
         viewModel.displayName(for: exerciseId, isJapanese: isJapaneseLocale)
     }
+
+    func openYouTubeSearch(exerciseId: String) {
+        guard let vndURL = youtubeVndSearchURL(exerciseId: exerciseId),
+              let appURL = youtubeAppSearchURL(exerciseId: exerciseId),
+              let webURL = youtubeWebSearchURL(exerciseId: exerciseId) else { return }
+
+        if UIApplication.shared.canOpenURL(appURL) {
+            openURL(appURL)
+        } else if UIApplication.shared.canOpenURL(vndURL) {
+            openURL(vndURL)
+        } else {
+            openURL(webURL)
+        }
+    }
+
+    func youtubeAppSearchURL(exerciseId: String) -> URL? {
+        var components = URLComponents()
+        components.scheme = "youtube"
+        components.host = "search"
+        components.queryItems = [
+            URLQueryItem(name: "query", value: displayName(for: exerciseId))
+        ]
+        return components.url
+    }
+
+    func youtubeVndSearchURL(exerciseId: String) -> URL? {
+        var components = URLComponents()
+        components.scheme = "vnd.youtube"
+        components.host = "search"
+        components.queryItems = [
+            URLQueryItem(name: "query", value: displayName(for: exerciseId))
+        ]
+        return components.url
+    }
+
+    func youtubeWebSearchURL(exerciseId: String) -> URL? {
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "www.youtube.com"
+        components.path = "/results"
+        components.queryItems = [
+            URLQueryItem(name: "search_query", value: displayName(for: exerciseId))
+        ]
+        return components.url
+    }
 }
 
 private struct SetEditorStrings {
@@ -234,6 +290,7 @@ private struct SetEditorStrings {
         isJapanese ? "編集対象が見つかりませんでした" : "Entry not found."
     }
     var closeTitle: String { isJapanese ? "閉じる" : "Close" }
+    var youtubeSearchTitle: String { isJapanese ? "YouTubeで検索" : "Search YouTube" }
     var axisDateFormat: String { "M/d" }
     func weightPlaceholder(unit: String) -> String {
         isJapanese ? "重量(\(unit))" : "Weight (\(unit))"
