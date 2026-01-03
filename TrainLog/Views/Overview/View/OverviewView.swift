@@ -5,6 +5,7 @@ struct OverviewTabView: View {
     @Query(sort: \Workout.date, order: .reverse) private var workouts: [Workout]
     @State private var exercises: [ExerciseCatalog] = []
     @State private var loadFailed = false
+    @State private var isLoadingExercises = true
     @State private var refreshID = UUID()
     @State private var showSettings = false
     @State private var navigationFeedbackTrigger = 0
@@ -30,6 +31,7 @@ struct OverviewTabView: View {
                         ),
                         workouts: workouts,
                         exercises: exercises,
+                        isLoadingExercises: isLoadingExercises,
                         locale: locale
                     )
                     .id(refreshID)
@@ -74,12 +76,17 @@ struct OverviewTabView: View {
     }
 
     private func loadExercises() {
-        guard exercises.isEmpty else { return }
+        guard exercises.isEmpty else {
+            isLoadingExercises = false
+            return
+        }
+        isLoadingExercises = true
         do {
             exercises = try ExerciseLoader.loadFromBundle()
         } catch {
             loadFailed = true
         }
+        isLoadingExercises = false
     }
 
 }
@@ -90,6 +97,7 @@ struct OverviewMuscleGrid: View {
     let volumes: [MuscleGroupVolume]
     let workouts: [Workout]
     let exercises: [ExerciseCatalog]
+    let isLoadingExercises: Bool
     let locale: Locale
 
     private let columns = [GridItem(.flexible(), spacing: 12)]
@@ -106,7 +114,13 @@ struct OverviewMuscleGrid: View {
         let visibleVolumes = volumes.filter { $0.muscleGroup != "other" }
 
         Group {
-            if visibleVolumes.isEmpty || exercises.isEmpty {
+            if isLoadingExercises {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+                }
+            } else if visibleVolumes.isEmpty || exercises.isEmpty {
                 Text(strings.noExerciseData)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)

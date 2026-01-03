@@ -4,6 +4,7 @@ struct ExerciseTabView: View {
     @EnvironmentObject private var favoritesStore: ExerciseFavoritesStore
     @State private var exercises: [ExerciseCatalog] = []
     @State private var loadFailed = false
+    @State private var isLoadingExercises = true
     @State private var navigationFeedbackTrigger = 0
     @State private var path: [ExerciseRoute] = []
     private var isJapaneseLocale: Bool {
@@ -84,7 +85,13 @@ struct ExerciseTabView: View {
                             .contentShape(Rectangle())
                         }
                     }
-                    if categories.isEmpty {
+                    if isLoadingExercises {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
+                    } else if categories.isEmpty {
                         Text(strings.noExerciseData)
                             .foregroundStyle(.secondary)
                     }
@@ -120,12 +127,17 @@ struct ExerciseTabView: View {
     }
 
     private func loadExercises() {
-        guard exercises.isEmpty else { return }
+        guard exercises.isEmpty else {
+            isLoadingExercises = false
+            return
+        }
+        isLoadingExercises = true
         do {
             exercises = try ExerciseLoader.loadFromBundle()
         } catch {
             loadFailed = true
         }
+        isLoadingExercises = false
     }
 
     private func displayName(_ exercise: ExerciseCatalog, isJapanese: Bool) -> String {
