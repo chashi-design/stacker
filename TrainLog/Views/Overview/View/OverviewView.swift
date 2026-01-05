@@ -32,7 +32,8 @@ struct OverviewTabView: View {
                         workouts: workouts,
                         exercises: exercises,
                         isLoadingExercises: isLoadingExercises,
-                        locale: locale
+                        locale: locale,
+                        calendar: calendar
                     )
                     .id(refreshID)
                 }
@@ -99,6 +100,7 @@ struct OverviewMuscleGrid: View {
     let exercises: [ExerciseCatalog]
     let isLoadingExercises: Bool
     let locale: Locale
+    let calendar: Calendar
 
     private let columns = [GridItem(.flexible(), spacing: 12)]
     @State private var navigationFeedbackTrigger = 0
@@ -128,6 +130,19 @@ struct OverviewMuscleGrid: View {
             } else {
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(visibleVolumes) { item in
+                        let trackingType = OverviewMetrics.trackingType(
+                            for: item.muscleGroup,
+                            segment: item.segment
+                        )
+                        let weeklyPoints = OverviewMetrics.weeklyMuscleGroupVolumesForSegment(
+                            muscleGroup: item.muscleGroup,
+                            segment: item.segment,
+                            workouts: workouts,
+                            exercises: exercises,
+                            calendar: calendar,
+                            weeks: 5,
+                            trackingType: trackingType
+                        )
                         Button {
                             selectedMuscleGroup = item
                         } label: {
@@ -135,9 +150,10 @@ struct OverviewMuscleGrid: View {
                                 title: item.displayName,
                                 monthLabel: weekRangeLabel(for: Date()),
                                 volume: item.volume,
-                                trackingType: OverviewMetrics.trackingType(for: item.muscleGroup, segment: item.segment),
+                                trackingType: trackingType,
                                 locale: locale,
-                                titleColor: MuscleGroupColor.color(for: item.muscleGroup)
+                                titleColor: MuscleGroupColor.color(for: item.muscleGroup),
+                                weeklyPoints: weeklyPoints
                             )
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
@@ -166,7 +182,7 @@ struct OverviewMuscleGrid: View {
     }
 
     private func weekRangeLabel(for date: Date) -> String {
-        let start = Calendar.appCurrent.startOfWeek(for: date) ?? date
+        let start = calendar.startOfWeek(for: date) ?? date
         let formatter = DateFormatter()
         formatter.locale = locale
         formatter.dateFormat = "M/d"
@@ -193,11 +209,12 @@ struct OverviewMuscleCard: View {
     let trackingType: ExerciseTrackingType
     let locale: Locale
     let titleColor: Color
+    let weeklyPoints: [VolumePoint]
     var chevronColor: Color = .secondary
     @Environment(\.weightUnit) private var weightUnit
 
     var body: some View {
-        HStack(alignment: .center) {
+        HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
                     .font(.callout.weight(.semibold))
@@ -224,6 +241,10 @@ struct OverviewMuscleCard: View {
                 }
             }
             Spacer()
+            WeeklyMiniChartView(
+                points: weeklyPoints,
+                barColor: titleColor
+            )
             Image(systemName: "chevron.right")
                 .foregroundStyle(.tertiary)
                 .imageScale(.small)
@@ -600,6 +621,55 @@ enum OverviewMetrics {
                     guard group == "other" else { continue }
                 } else {
                     guard group == muscleGroup else { continue }
+                }
+                buckets[weekStart, default: 0] += metricValue(for: set, trackingType: trackingType)
+            }
+        }
+
+        let weeksRange = (0..<weeks).compactMap { offset in
+            calendar.date(byAdding: .weekOfYear, value: offset, to: start)
+        }
+
+        return weeksRange.map { weekStart in
+            let normalized = calendar.startOfWeek(for: weekStart) ?? weekStart
+            return VolumePoint(date: normalized, volume: buckets[normalized, default: 0])
+        }
+    }
+
+    static func weeklyMuscleGroupVolumesForSegment(
+        muscleGroup: String,
+        segment: MuscleGroupSegment,
+        workouts: [Workout],
+        exercises: [ExerciseCatalog],
+        calendar: Calendar,
+        weeks: Int,
+        trackingType: ExerciseTrackingType
+    ) -> [VolumePoint] {
+        guard weeks > 0 else { return [] }
+        let today = calendar.startOfDay(for: Date())
+        let currentWeekStart = calendar.startOfWeek(for: today) ?? today
+        guard let start = calendar.date(byAdding: .weekOfYear, value: -(weeks - 1), to: currentWeekStart),
+              let end = calendar.date(byAdding: .weekOfYear, value: 1, to: currentWeekStart) else { return [] }
+
+        var buckets: [Date: Double] = [:]
+
+        for workout in workouts where workout.date >= start && workout.date < end {
+            guard let weekStart = calendar.startOfWeek(for: workout.date) else { continue }
+            for set in workout.sets {
+                guard let exercise = resolveExercise(for: set, exercises: exercises) else {
+                    if muscleGroup == "other" && segment == .all {
+                        buckets[weekStart, default: 0] += metricValue(for: set, trackingType: trackingType)
+                    }
+                    continue
+                }
+                let group = exercise.muscleGroup
+                if muscleGroup == "other" {
+                    guard group == "other" else { continue }
+                } else {
+                    guard group == muscleGroup else { continue }
+                }
+                if segment != .all {
+                    guard OverviewMetrics.segment(for: exercise) == segment else { continue }
                 }
                 buckets[weekStart, default: 0] += metricValue(for: set, trackingType: trackingType)
             }
