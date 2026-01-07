@@ -207,9 +207,9 @@ struct OverviewActivityRecordView: View {
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
         .chartPlotStyle { plotArea in
-            plotArea.clipShape(RoundedRectangle(cornerRadius: 4))
+            plotArea.clipShape(RoundedRectangle(cornerRadius: 6))
         }
-        .frame(height: 14)
+        .frame(height: 18)
     }
 
     private var heatmapLegend: some View {

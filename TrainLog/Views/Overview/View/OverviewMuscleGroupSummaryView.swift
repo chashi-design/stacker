@@ -10,7 +10,7 @@ struct OverviewMuscleGroupSummaryView: View {
     @EnvironmentObject private var favoritesStore: ExerciseFavoritesStore
     @Environment(\.weightUnit) private var weightUnit
 
-    @State private var chartPeriod: PartsChartPeriod = .day
+    @State private var chartPeriod: PartsChartPeriod = .week
     @State private var filter: PartsFilter = .all
     @State private var navigationFeedbackTrigger = 0
     @State private var exerciseFeedbackTrigger = 0

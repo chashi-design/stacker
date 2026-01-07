@@ -66,7 +66,7 @@ private struct ContentStrings {
     let isJapanese: Bool
 
     var activityTabTitle: String { isJapanese ? "アクティビティ" : "Activity" }
-    var logTabTitle: String { isJapanese ? "メモ" : "Log" }
+    var logTabTitle: String { isJapanese ? "記録" : "Records" }
     var exercisesTabTitle: String { isJapanese ? "種目" : "Exercises" }
 }
 

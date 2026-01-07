@@ -6,7 +6,7 @@ struct OverviewExerciseSummaryView: View {
     let workouts: [Workout]
 
     @Environment(\.weightUnit) private var weightUnit
-    @State private var chartPeriod: ExerciseChartPeriod = .day
+    @State private var chartPeriod: ExerciseChartPeriod = .week
     @State private var navigationFeedbackTrigger = 0
     @State private var selectedWeekItem: ExerciseWeekListItem?
     private let calendar = Calendar.appCurrent

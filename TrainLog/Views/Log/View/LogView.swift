@@ -318,7 +318,7 @@ struct LogView: View {
 private struct LogStrings {
     let isJapanese: Bool
 
-    var navigationTitle: String { isJapanese ? "メモ" : "Log" }
+    var navigationTitle: String { isJapanese ? "記録" : "Records" }
     var todayLabel: String { isJapanese ? "今日" : "Today" }
     var deleteAlertTitle: String { isJapanese ? "選択した種目を削除しますか？" : "Delete selected exercises?" }
     var deleteActionTitle: String { isJapanese ? "削除" : "Delete" }
