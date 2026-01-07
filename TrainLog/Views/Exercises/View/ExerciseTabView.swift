@@ -1,5 +1,6 @@
 import SwiftUI
 
+// 種目タブ画面
 struct ExerciseTabView: View {
     @EnvironmentObject private var favoritesStore: ExerciseFavoritesStore
     @State private var exercises: [ExerciseCatalog] = []
@@ -7,6 +8,7 @@ struct ExerciseTabView: View {
     @State private var isLoadingExercises = true
     @State private var navigationFeedbackTrigger = 0
     @State private var path: [ExerciseRoute] = []
+    @State private var showSettings = false
     private var isJapaneseLocale: Bool {
         Locale.preferredLanguages.first?.hasPrefix("ja") ?? false
     }
@@ -98,6 +100,18 @@ struct ExerciseTabView: View {
                 }
             }
             .navigationTitle(strings.navigationTitle)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .foregroundStyle(.primary)
+                    }
+                    .accessibilityLabel(strings.settingsLabel)
+                    .tint(.primary)
+                }
+            }
             .task { loadExercises() }
             .alert(strings.loadFailedMessage, isPresented: $loadFailed) {
                 Button("OK", role: .cancel) {}
@@ -122,7 +136,17 @@ struct ExerciseTabView: View {
                     navigationFeedbackTrigger += 1
                 }
             }
+            .onChange(of: showSettings) { _, newValue in
+                if newValue {
+                    navigationFeedbackTrigger += 1
+                }
+            }
             .sensoryFeedback(.impact(weight: .light), trigger: navigationFeedbackTrigger)
+            .sheet(isPresented: $showSettings) {
+                NavigationStack {
+                    SettingsView()
+                }
+            }
         }
     }
 
@@ -165,6 +189,7 @@ private struct ExerciseTabStrings {
     var categorySectionTitle: String { isJapanese ? "カテゴリ" : "Categories" }
     var noExerciseData: String { isJapanese ? "種目データがありません" : "No exercise data available." }
     var navigationTitle: String { isJapanese ? "種目" : "Exercises" }
+    var settingsLabel: String { isJapanese ? "設定" : "Settings" }
     var loadFailedMessage: String {
         isJapanese ? "種目リストの読み込みに失敗しました" : "Failed to load exercise list."
     }

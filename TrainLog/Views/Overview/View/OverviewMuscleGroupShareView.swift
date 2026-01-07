@@ -1,7 +1,7 @@
 import Charts
 import SwiftUI
 
-// 部位の割合画面
+// 種目の割合画面
 struct OverviewMuscleGroupShareView: View {
     let workouts: [Workout]
     let exercises: [ExerciseCatalog]
@@ -169,10 +169,6 @@ struct OverviewMuscleGroupShareView: View {
                         }
                         .frame(width: 220, height: 220)
                         .frame(maxWidth: .infinity, alignment: .center)
-
-                        Text(strings.basedOnExercisesText)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -196,6 +192,12 @@ struct OverviewMuscleGroupShareView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
                     }
+                } header: {
+                    Text(strings.shareSectionTitle)
+                } footer: {
+                    Text(strings.basedOnExercisesText)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -205,18 +207,24 @@ struct OverviewMuscleGroupShareView: View {
 
     private func shareItems(for month: Int) -> [MuscleGroupShareItem] {
         guard let range = monthRange(for: selectedYear, month: month) else { return [] }
-        var uniqueByGroup: [String: Set<String>] = [:]
+        var countByGroup: [String: Int] = [:]
 
         for workout in workouts where workout.date >= range.start && workout.date < range.end {
-            for set in workout.sets {
-                let group = exerciseLookup[set.exerciseId] ?? "other"
-                uniqueByGroup[group, default: []].insert(set.exerciseId)
+            let exerciseIds = Set(workout.sets.map(\.exerciseId))
+            for exerciseId in exerciseIds {
+                let group = exerciseLookup[exerciseId] ?? "other"
+                countByGroup[group, default: 0] += 1
             }
         }
 
-        return uniqueByGroup
-            .map { MuscleGroupShareItem(muscleGroup: $0.key, count: $0.value.count) }
-            .sorted { $0.count > $1.count }
+        return countByGroup
+            .map { MuscleGroupShareItem(muscleGroup: $0.key, count: $0.value) }
+            .sorted { lhs, rhs in
+                if lhs.count != rhs.count {
+                    return lhs.count > rhs.count
+                }
+                return lhs.label < rhs.label
+            }
     }
 
     private func monthRange(for year: Int, month: Int) -> DateInterval? {
@@ -266,10 +274,11 @@ private struct MuscleGroupShareItem: Identifiable {
 private struct OverviewMuscleGroupShareViewStrings {
     let isJapanese: Bool
 
-    var title: String { isJapanese ? "部位の割合" : "Muscle Group Share" }
+    var title: String { isJapanese ? "種目の割合" : "Exercise Share" }
     var noDataText: String { isJapanese ? "データがありません" : "No data available." }
     var basedOnExercisesText: String { isJapanese ? "※種目数ベース" : "Based on number of exercises" }
     var chartValueLabel: String { isJapanese ? "種目数" : "Exercises" }
+    var shareSectionTitle: String { isJapanese ? "種目別" : "By Exercise" }
     var monthPickerTitle: String { isJapanese ? "年月を選択" : "Select Month" }
     var yearPickerLabel: String { isJapanese ? "年" : "Year" }
     var monthPickerLabel: String { isJapanese ? "月" : "Month" }

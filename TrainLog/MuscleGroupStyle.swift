@@ -9,10 +9,10 @@ enum MuscleGroupColor {
         "chest": .red,
         "shoulders": .orange,
         "arms": .green,
-        "back": .teal,
-        "legs": .purple,
-        "abs": .pink,
-        "cardio": .brown,
+        "back": .mint,
+        "legs": .cyan,
+        "abs": .purple,
+        "cardio": .pink,
         "other": .gray
     ]
 }

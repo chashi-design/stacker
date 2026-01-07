@@ -1,7 +1,7 @@
 import Charts
 import SwiftUI
 
-// Overviewの部位割合カード
+// Overviewの種目割合カード
 struct OverviewMuscleGroupShareCard: View {
     let workouts: [Workout]
     let exercises: [ExerciseCatalog]
@@ -21,7 +21,7 @@ struct OverviewMuscleGroupShareCard: View {
             HStack(spacing: 4) {
                 Text(strings.title)
                     .font(.subheadline .weight(.semibold))
-                    .foregroundStyle(.indigo)
+                    .foregroundStyle(.blue)
                 Spacer()
                 Text(currentMonthLabel)
                     .font(.subheadline)
@@ -39,7 +39,7 @@ struct OverviewMuscleGroupShareCard: View {
                 Text(strings.noDataText)
                     .foregroundStyle(.secondary)
             } else {
-                HStack(spacing: 16) {
+                HStack(spacing: 32) {
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(shareItems) { item in
                             HStack(spacing: 8) {
@@ -82,18 +82,24 @@ struct OverviewMuscleGroupShareCard: View {
     private var shareItems: [MuscleGroupShareItem] {
         guard let range = monthRange else { return [] }
         let exerciseLookup = Dictionary(uniqueKeysWithValues: exercises.map { ($0.id, $0.muscleGroup) })
-        var uniqueByGroup: [String: Set<String>] = [:]
+        var countByGroup: [String: Int] = [:]
 
         for workout in workouts where workout.date >= range.start && workout.date < range.end {
-            for set in workout.sets {
-                let group = exerciseLookup[set.exerciseId] ?? "other"
-                uniqueByGroup[group, default: []].insert(set.exerciseId)
+            let exerciseIds = Set(workout.sets.map(\.exerciseId))
+            for exerciseId in exerciseIds {
+                let group = exerciseLookup[exerciseId] ?? "other"
+                countByGroup[group, default: 0] += 1
             }
         }
 
-        return uniqueByGroup
-            .map { MuscleGroupShareItem(muscleGroup: $0.key, count: $0.value.count) }
-            .sorted { $0.count > $1.count }
+        return countByGroup
+            .map { MuscleGroupShareItem(muscleGroup: $0.key, count: $0.value) }
+            .sorted { lhs, rhs in
+                if lhs.count != rhs.count {
+                    return lhs.count > rhs.count
+                }
+                return lhs.label < rhs.label
+            }
     }
 
     private var totalCount: Int {
@@ -130,7 +136,7 @@ private struct MuscleGroupShareItem: Identifiable {
 private struct OverviewMuscleGroupShareStrings {
     let isJapanese: Bool
 
-    var title: String { isJapanese ? "部位の割合" : "Muscle Group Share" }
+    var title: String { isJapanese ? "種目割合" : "Exercise Share" }
     var noDataText: String { isJapanese ? "データがありません" : "No data available." }
     var chartValueLabel: String { isJapanese ? "種目数" : "Exercises" }
 }

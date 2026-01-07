@@ -133,9 +133,12 @@
 - 利用規約/プライバシーポリシーのリンクは端末の優先言語が日本語なら `japanese`、それ以外は `english` を開く
 - Web表示は `SFSafariViewController` を基本利用し、別手段が必要な場合は事前に確認する
 - アクティビティタブ右上の設定導線はモーダル（sheet）で表示し、Xボタンで閉じる
+- 種目タブ右上にも同じ設定導線（gearshape）を配置し、モーダルで開く
 - セクションラベルがない `List` には `.contentMargins(.top, 4, for: .scrollContent)` を適用する
 - 重量単位の切替は設定画面の `Picker`（`.automatic`）で実装し、カスタムオーバーレイは使わない
 - LogViewのカレンダーは「週の始まり」設定に追従し、アプリ復帰時（scenePhase active）に再描画で反映する
+- Overviewの「部位の割合」は「種目の割合」に統一し、セクション名は「種目別」/英語は "By Exercise"
+- アクセントカラーは systemBlue（AccentColor）を使用する
 
 ## Shared State / Weekly UI Rules
 - お気に入り状態はタブ共通ストアで管理し、TabView配下でenvironmentObject注入する

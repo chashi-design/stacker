@@ -9,6 +9,7 @@ struct OverviewTabView: View {
     @State private var refreshID = UUID()
     @State private var showSettings = false
     @State private var showShareView = false
+    @State private var showActivityRecordView = false
     @State private var navigationFeedbackTrigger = 0
 
     private let calendar = Calendar.appCurrent
@@ -24,6 +25,18 @@ struct OverviewTabView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
+                    Button {
+                        showActivityRecordView = true
+                    } label: {
+                        OverviewActivityRecordCard(
+                            workouts: workouts,
+                            calendar: calendar
+                        )
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+
                     Button {
                         showShareView = true
                     } label: {
@@ -82,6 +95,12 @@ struct OverviewTabView: View {
                     calendar: calendar
                 )
             }
+            .navigationDestination(isPresented: $showActivityRecordView) {
+                OverviewActivityRecordView(
+                    workouts: workouts,
+                    calendar: calendar
+                )
+            }
             .background(Color(.systemGroupedBackground))
             .task {
                 loadExercises()
@@ -98,6 +117,11 @@ struct OverviewTabView: View {
                 }
             }
             .onChange(of: showShareView) { _, newValue in
+                if newValue {
+                    navigationFeedbackTrigger += 1
+                }
+            }
+            .onChange(of: showActivityRecordView) { _, newValue in
                 if newValue {
                     navigationFeedbackTrigger += 1
                 }
