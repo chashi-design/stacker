@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "仮_light.png",
+      "filename" : "Outlined.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
@@ -12,12 +12,12 @@
           "value" : "dark"
         }
       ],
-      "filename" : "仮_dark.png",
+      "filename" : "Outlined 1.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "仮_light@2x.png",
+      "filename" : "Outlined@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
@@ -28,12 +28,12 @@
           "value" : "dark"
         }
       ],
-      "filename" : "仮_dark@2x.png",
+      "filename" : "Outlined@2x 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "仮_light@3x.png",
+      "filename" : "Outlined@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     },
@@ -44,7 +44,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "仮_dark@3x.png",
+      "filename" : "Outlined@3x 1.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

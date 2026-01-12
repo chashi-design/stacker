@@ -56,16 +56,17 @@ struct ActivityHeatmapView: View {
 
 enum ActivityHeatmapPalette {
     static func color(for count: Int) -> Color {
+        let accent = Color.accentColor
         if count <= 0 {
             return .gray.opacity(0.2)
         }
         if count <= 2 {
-            return .blue.opacity(0.25)
+            return accent.opacity(0.25)
         }
         if count <= 4 {
-            return .blue.opacity(0.5)
+            return accent.opacity(0.5)
         }
-        return .blue
+        return accent
     }
 }
 

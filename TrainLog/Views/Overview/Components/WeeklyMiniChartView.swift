@@ -56,6 +56,6 @@ struct WeeklyMiniChartView: View {
             VolumePoint(date: Date().addingTimeInterval(-60 * 60 * 24 * 7), volume: 18),
             VolumePoint(date: Date(), volume: 16)
         ],
-        barColor: .blue
+        barColor: Color.accentColor
     )
 }

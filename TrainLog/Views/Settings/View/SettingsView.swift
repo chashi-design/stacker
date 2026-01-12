@@ -80,7 +80,7 @@ struct SettingsView: View {
         .sheet(item: $selectedItem) { item in
             SafariView(url: item.url)
         }
-        .sheet(isPresented: $isTutorialPresented) {
+        .fullScreenCover(isPresented: $isTutorialPresented) {
             TutorialView(isPresented: $isTutorialPresented)
         }
         .onChange(of: selectedItem) { _, newValue in

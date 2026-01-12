@@ -201,7 +201,7 @@ struct OverviewActivityRecordView: View {
                 xEnd: .value("Active", active),
                 y: .value("Row", "activity")
             )
-            .foregroundStyle(Color.blue)
+            .foregroundStyle(Color.accentColor)
         }
         .chartXScale(domain: 0...Double(total))
         .chartXAxis(.hidden)

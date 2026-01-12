@@ -18,40 +18,47 @@ struct ContentView: View {
     }
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            OverviewTabView()
-                .tag(Tab.summary)
-                .tabItem {
-                    Label(strings.activityTabTitle, systemImage: "chart.bar.fill")
-                }
+        ZStack {
+            TabView(selection: $selectedTab) {
+                OverviewTabView()
+                    .tag(Tab.summary)
+                    .tabItem {
+                        Label(strings.activityTabTitle, systemImage: "chart.bar.fill")
+                    }
 
-            LogView()
-                .tag(Tab.memo)
-                .tabItem {
-                    Label(strings.logTabTitle, systemImage: "calendar.badge.plus")
-                }
-            
-            ExerciseTabView()
-                .tag(Tab.exercises)
-                .tabItem {
-                    Label(strings.exercisesTabTitle, systemImage: "list.bullet")
-                }
-        }
-        .onChange(of: selectedTab) { _, _ in
-            tabHapticTrigger += 1
-        }
-        .onAppear {
-            if !hasSeenTutorial && !isTutorialPresented {
-                isTutorialPresented = true
+                LogView()
+                    .tag(Tab.memo)
+                    .tabItem {
+                        Label(strings.logTabTitle, systemImage: "calendar.badge.plus")
+                    }
+                
+                ExerciseTabView()
+                    .tag(Tab.exercises)
+                    .tabItem {
+                        Label(strings.exercisesTabTitle, systemImage: "list.bullet")
+                    }
             }
+            .onChange(of: selectedTab) { _, _ in
+                tabHapticTrigger += 1
+            }
+            .sensoryFeedback(.impact(weight: .light), trigger: tabHapticTrigger)
+            .allowsHitTesting(hasSeenTutorial)
         }
-        .sensoryFeedback(.impact(weight: .light), trigger: tabHapticTrigger)
         .environmentObject(favoritesStore)
         .environment(\.weightUnit, WeightUnit(rawValue: weightUnitRaw) ?? .kg)
-        .sheet(isPresented: $isTutorialPresented, onDismiss: {
+        .onAppear {
+            if !hasSeenTutorial && !isTutorialPresented {
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    isTutorialPresented = true
+                }
+            }
+        }
+        .fullScreenCover(isPresented: $isTutorialPresented, onDismiss: {
             hasSeenTutorial = true
         }) {
-            TutorialView(isPresented: $isTutorialPresented)
+            TutorialView(isPresented: $isTutorialPresented, enableFadeIn: !hasSeenTutorial)
         }
     }
 }

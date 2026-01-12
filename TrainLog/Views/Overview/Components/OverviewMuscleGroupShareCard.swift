@@ -21,7 +21,7 @@ struct OverviewMuscleGroupShareCard: View {
             HStack(spacing: 4) {
                 Text(strings.title)
                     .font(.subheadline .weight(.semibold))
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.accentColor)
                 Spacer()
                 Text(currentMonthLabel)
                     .font(.subheadline)

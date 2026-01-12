@@ -4,7 +4,7 @@
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24063"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
-        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="Named colors in document resources" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -21,7 +21,7 @@
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
-                        <color key="backgroundColor" systemColor="systemGroupedBackgroundColor"/>
+                        <color key="backgroundColor" name="AccentColor"/>
                         <constraints>
                             <constraint firstItem="E6K-7X-vhm" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="2tF-0k-ZcV"/>
                             <constraint firstItem="E6K-7X-vhm" firstAttribute="width" constant="120" id="U8H-5m-9kB"/>
@@ -37,8 +37,8 @@
     </scenes>
     <resources>
         <image name="LaunchIcon" width="120" height="120"/>
-        <systemColor name="systemGroupedBackgroundColor">
-            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </systemColor>
+        <namedColor name="AccentColor">
+            <color red="0.0" green="0.302" blue="1.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>
