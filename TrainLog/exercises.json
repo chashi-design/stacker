@@ -476,17 +476,20 @@
   },
   {
     "id": "ex034",
-    "name": "ベンチディップス",
+    "name": "ベンチ・ディップス",
     "nameEn": "Bench Dips",
-    "muscleGroup": "arms",
+    "muscleGroup": "shoulders",
     "aliases": [
-      "ディップス(ベンチ)"
+      "ベンチディップス",
+      "ディップス(ベンチ)",
+      "bench dips",
+      "bench dip"
     ],
     "equipment": "bodyweight",
     "trackingType": "repsOnly",
-    "pattern": "elbow_extension",
-    "descJa": "ベンチディップスとは、自重を使って「動かす」動作で腕（上腕三頭筋）を鍛える種目です。器具なしで手軽にでき、フォーム次第で負荷調整しやすいのが特徴で、反動を抑えてコントロールしながら反復します。二の腕の厚みづくりやプレス系の補強が期待できます。",
-    "descEn": "Use your bodyweight to extend. Extend the elbows and return. Targets triceps; no equipment needed. Builds triceps size and improves pressing.",
+    "pattern": "vertical_push",
+    "descJa": "ベンチ・ディップスとは、自重を使って「押す」動作で肩前部（三角筋前部）と腕（上腕三頭筋）を鍛える種目です。ベンチに手を置き、肘を曲げて体を下ろし、肩と腕で押し上げる動作を繰り返します。肩前部に刺激が入りやすいのが特徴です。",
+    "descEn": "Bench dips use bodyweight on a bench. Lower the torso by bending the elbows, then press back up. Targets front delts and triceps; keep the shoulders controlled.",
   },
   {
     "id": "ex035",
@@ -1642,5 +1645,39 @@
       "pattern": "lunge",
       "descJa": "ダンベルステップアップとは、ダンベルを使って「踏み台に上がる」動作でお尻（臀筋）、脚（大腿四頭筋）を鍛える種目です。左右のバランスを整えやすいのが特徴で、反動を抑えてコントロールしながら反復します。下半身の筋力・筋量アップが期待できます。",
       "descEn": "Hold dumbbells and step onto a platform, then return under control. Targets quads, hamstrings, and glutes; improves balance."
+  },
+  {
+      "id": "ex113",
+      "name": "パイク・プッシュ・アップ",
+      "nameEn": "Pike Push-up",
+      "muscleGroup": "shoulders",
+      "aliases": [
+          "パイクプッシュアップ",
+          "パイク腕立て",
+          "pike pushup",
+          "pike push-up"
+      ],
+      "equipment": "bodyweight",
+      "trackingType": "repsOnly",
+      "pattern": "vertical_push",
+      "descJa": "パイク・プッシュ・アップとは、自重を使って「押す」動作で肩（三角筋）を中心に鍛える種目です。腰を高く持ち上げて逆V字姿勢を作り、頭を床へ近づけて押し戻す動作を繰り返します。オーバーヘッドプレスに近い刺激が得られるのが特徴です。",
+      "descEn": "Pike push-up is a bodyweight press that targets the delts. Lift the hips into an inverted V, lower the head toward the floor, and press back up. It provides an overhead-press-like stimulus."
+  },
+  {
+      "id": "ex114",
+      "name": "サイド・プッシュ・アップ",
+      "nameEn": "Side Push-up",
+      "muscleGroup": "shoulders",
+      "aliases": [
+          "サイドプッシュアップ",
+          "サイド腕立て",
+          "side pushup",
+          "side push-up"
+      ],
+      "equipment": "bodyweight",
+      "trackingType": "repsOnly",
+      "pattern": "horizontal_push",
+      "descJa": "サイド・プッシュ・アップとは、自重を使って片側に体重を乗せる「押す」動作で肩（三角筋）と体幹を鍛える種目です。横向き姿勢から肘を曲げて胸を床へ近づけ、押し上げる動作を繰り返します。片側への負荷が高く、安定性向上が期待できます。",
+      "descEn": "Side push-up is a unilateral bodyweight press from a side-plank-like position. Bend the working elbow to lower the torso and press back up. Targets delts and core; builds stability."
   }
 ]

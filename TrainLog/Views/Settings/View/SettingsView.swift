@@ -39,7 +39,7 @@ struct SettingsView: View {
     }
 
     private var docsBaseURL: String {
-        "https://chashi-design.github.io/stacker"
+        "https://biggrapp.com"
     }
 
     private var localePath: String {
