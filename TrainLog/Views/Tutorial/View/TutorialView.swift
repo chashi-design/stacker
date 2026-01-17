@@ -176,10 +176,21 @@ struct TutorialView: View {
         let localeSuffix = isJapaneseLocale ? "ja" : "en"
         let schemeSuffix = colorScheme == .dark ? "dark" : "light"
         let variantName = "\(baseName)_\(localeSuffix)_\(schemeSuffix)"
+        let deviceSuffix = UIDevice.current.userInterfaceIdiom == .pad ? "ipad" : nil
         var candidates: [String] = []
         if let index = tutorialIndex(from: baseName) {
+            if let deviceSuffix {
+                candidates.append("Tutorial/\(index)/\(variantName)_\(deviceSuffix)")
+                candidates.append("Tutorial/\(index)/\(baseName)_\(deviceSuffix)")
+            }
             candidates.append("Tutorial/\(index)/\(variantName)")
             candidates.append("Tutorial/\(index)/\(baseName)")
+        }
+        if let deviceSuffix {
+            candidates.append("Tutorial/\(variantName)_\(deviceSuffix)")
+            candidates.append("\(variantName)_\(deviceSuffix)")
+            candidates.append("Tutorial/\(baseName)_\(deviceSuffix)")
+            candidates.append("\(baseName)_\(deviceSuffix)")
         }
         candidates.append("Tutorial/\(variantName)")
         candidates.append(variantName)

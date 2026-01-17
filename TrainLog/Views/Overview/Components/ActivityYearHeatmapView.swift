@@ -179,9 +179,9 @@ struct ActivityYearHeatmapView: View {
             }
         }
         switch weekday {
-        case 2: return "Mon"
-        case 4: return "Wed"
-        case 6: return "Fri"
+        case 2: return "M"
+        case 4: return "W"
+        case 6: return "F"
         default: return ""
         }
     }
