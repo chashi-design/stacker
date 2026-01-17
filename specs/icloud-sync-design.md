@@ -97,6 +97,10 @@ final class FavoriteExercise {
   - Run Local -> Cloud migration once.
   - Mark migration completion in UserDefaults.
 
+### CloudKit environment
+- ICLOUD_ENVIRONMENT = Development (Debug) / Production (Release) を使用する。
+- DevelopmentとProductionでデータは分離される。
+
 ## Migration Plan
 ### Local -> iCloud (first launch with iCloud available)
 - Load local store if it exists.
@@ -133,6 +137,8 @@ final class FavoriteExercise {
 ### Notes
 - SwiftData does not expose detailed CloudKit sync events.
 - Status is coarse and best-effort; clarify in UI.
+- accountStatus中心のため、容量不足や実際の同期完了は直接検知できない。
+- 「最終同期」は最終チェック時刻であり、実際の同期完了時刻ではない。
 
 ## UI Integration (Settings)
 - Add "iCloud Sync" section with:

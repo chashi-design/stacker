@@ -31,6 +31,8 @@
 - XcodeでiCloud（CloudKit）を有効化する。
 - CloudKitはprivate databaseのみを使用する。
 - コンテナはBundle IDに紐づくものを使用する。
+- Apple Developer Program（有料）加入が前提。Personal TeamではiCloud Capabilityを使用できない。
+- App IDでiCloud Capabilityを有効化し、CloudKitコンテナを作成する。
 
 ## iCloud状態判定
 - CKContainer.accountStatus で判定。
@@ -48,6 +50,7 @@
 - iCloud設定への導線（設定アプリを開く）を用意する。
 - 可能なら「最終同期時刻」を表示（取得できる場合のみ）。
 - アプリ内にiCloud同期のON/OFFトグルは設けない。
+- 容量不足の表示はCloudKitエラー検知が必要なため、初期実装では表示できない可能性がある。
 
 ## 同期フロー
 ### 初回起動（iCloud有効）
